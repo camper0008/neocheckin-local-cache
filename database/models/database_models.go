@@ -1,4 +1,4 @@
-package database_models
+package models
 
 type DatabaseModel struct {
 	DatabaseId string
