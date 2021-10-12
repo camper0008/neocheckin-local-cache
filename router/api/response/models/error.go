@@ -1,4 +1,4 @@
-package database_models
+package response_models
 
 type Error struct {
 	Error string

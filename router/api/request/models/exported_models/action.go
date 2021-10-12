@@ -1,4 +1,4 @@
-package database_models
+package exported_models
 
 import (
 	"neocheckin_cache/shared"
@@ -6,7 +6,6 @@ import (
 )
 
 type Action struct {
-	DatabaseModel
 	Timestamp time.Time
 	Option    shared.WrapperEnum
 	Rfid      string

@@ -1,5 +1,6 @@
 package database
 
+/*
 import (
 	models "neocheckin_cache/database/database_models"
 	"sort"
@@ -47,3 +48,4 @@ func (db *MemoryDatabase) GetWorkingEmployees() models.WorkingEmployees {
 func (db *MemoryDatabase) GetAvailableOptions() []models.Option {
 	return db.options
 }
+*/
