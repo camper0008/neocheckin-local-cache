@@ -1,5 +1,8 @@
 package router
 
-func ConnectAPI() Router {
-	return Router{}
+import "neocheckin_cache/database"
+
+func ConnectAPI(db database.AbstractDatabase) Router {
+	router := Router{}
+	return router
 }
