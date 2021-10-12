@@ -1,7 +1,7 @@
 package response_models
 
 import (
-	"neocheckin_cache/router/api/response/models/exported_models"
+	"neocheckin_cache/router/api/models/exported_models"
 )
 
 type WorkingEmployees struct {
