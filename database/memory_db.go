@@ -1,51 +1,71 @@
 package database
 
-/*
 import (
-	models "neocheckin_cache/database/database_models"
-	"sort"
+	"fmt"
+	"neocheckin_cache/database/database_models"
+	"neocheckin_cache/shared"
 )
 
 type MemoryDatabase struct {
 	AbstractDatabase
-	employees []models.Employee
-	options   []models.Option
+	employees []database_models.Employee
+	options   []database_models.Option
 }
 
-func (db *MemoryDatabase) GetEmployeeFromRfid(rfid string) (models.Employee, bool) {
-	for i := range db.employees {
-		if db.employees[i].Rfid == rfid {
-			return db.employees[i], true
+func find[T any](a []T, f func(T) bool) T, error {
+	for _, v := range a {
+		if f(v) {
+			return v
 		}
 	}
-
-	return models.Employee{}, false
+	panic("Not found")
 }
 
-func (db *MemoryDatabase) UpdateWorkingStatus(employee models.Employee, checkingIn bool, optionId int) {
-	employee.Working = checkingIn
-}
-
-func (db *MemoryDatabase) GetWorkingEmployees() models.WorkingEmployees {
-	ordered := map[string][]models.Employee{}
-
+func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (database_models.Employee, error) {
 	for i := range db.employees {
-		ordered[db.employees[i].Department] = append(ordered[db.employees[i].Department], db.employees[i])
+		if db.employees[i].Rfid == rfid {
+			return db.employees[i], nil
+		}
 	}
-
-	for d := range ordered {
-		sort.Slice(ordered[d], func(i int, j int) bool {
-			return ordered[d][i].Name > ordered[d][j].Name
-		})
-	}
-
-	return models.WorkingEmployees{
-		Employees: db.employees,
-		Ordered:   ordered,
-	}
+	panic(fmt.Sprintf("Could not find Employee with rfid '%s'", rfid))
 }
 
-func (db *MemoryDatabase) GetAvailableOptions() []models.Option {
-	return db.options
+func (db *MemoryDatabase) GetEmployeeWithDatabaseId(string) database_models.Employee {
+	panic("Not implemented")
 }
-*/
+
+func (db *MemoryDatabase) InsertEmployee(database_models.Employee) error {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(string, database_models.Employee) error {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(string, database_models.Employee) error {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) GetOptionWithWrapperId(shared.WrapperEnum) (database_models.Option, error) {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) GetOptionWithDatabaseId(string) (database_models.Option, error) {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) InsertOption(database_models.Option) error {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) UpdateOptionWithDatabaseId(string, database_models.Option) error {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) DeleteOptionWithDatabaseId(string, database_models.Option) error {
+	panic("Not implemented")
+}
+
+func (db *MemoryDatabase) AddAction(database_models.Action) {
+	panic("Not implemented")
+}
