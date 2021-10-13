@@ -5,7 +5,7 @@ import (
 )
 
 type Option struct {
-	Id        shared.WrapperEnum
-	Name      string
-	Available bool
+	Id        shared.WrapperEnum `json:"id"`
+	Name      string             `json:"name"`
+	Available bool               `json:"available"`
 }
