@@ -31,19 +31,7 @@ func GetEmployeeFromRfid(rw http.ResponseWriter, rq http.Request, db db.Abstract
 
 	empl, err := db.GetEmployeeWithRfid(rfid)
 
-	if err != nil {
-		encoded, err := utils.JsonEncode(rsm.Error{
-			Error: err.Error(),
-		})
-
-		if err == nil {
-			fmt.Fprintf(rw, "%s", encoded)
-			return
-		} else {
-			rw.WriteHeader(http.StatusInternalServerError)
-			return
-		}
-	} else {
+	if err == nil {
 		encoded, err := utils.JsonEncode(rsm.GetEmployee{
 			Employee: em.Employee{
 				Name:       empl.Name,
@@ -61,5 +49,7 @@ func GetEmployeeFromRfid(rw http.ResponseWriter, rq http.Request, db db.Abstract
 			rw.WriteHeader(http.StatusInternalServerError)
 			return
 		}
+	} else {
+		utils.WriteError(rw, err)
 	}
 }
