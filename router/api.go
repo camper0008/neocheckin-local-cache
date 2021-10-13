@@ -1,8 +1,20 @@
 package router
 
-import "neocheckin_cache/database"
+import (
+	"neocheckin_cache/database"
+	api "neocheckin_cache/router/api"
+)
 
 func ConnectAPI(db database.AbstractDatabase) Router {
-	router := Router{}
+	router := Router{
+		Path: "/api",
+	}
+
+	router.Register(Endpoint{
+		Path:    "/employee/*",
+		Method:  "GET",
+		Handler: api.GetEmployeeFromRfid,
+	})
+
 	return router
 }
