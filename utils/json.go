@@ -9,7 +9,7 @@ func JsonEncode(s interface{}) ([]byte, error) {
 	b, err := json.Marshal(s)
 
 	if err != nil {
-		panic(fmt.Sprintf("Could not encode to json: '%s'", err.Error()))
+		return b, fmt.Errorf("could not encode to json: '%s'", err.Error())
 	}
 
 	return b, nil

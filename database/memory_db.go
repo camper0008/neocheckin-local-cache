@@ -7,7 +7,6 @@ import (
 )
 
 type MemoryDatabase struct {
-	AbstractDatabase
 	employees []models.Employee
 	options   []models.Option
 }
@@ -18,7 +17,7 @@ func findEmployee(a []models.Employee, f func(models.Employee) bool) (int, *mode
 			return i, &v, nil
 		}
 	}
-	panic("Not found")
+	return -1, nil, fmt.Errorf("employee not found")
 }
 
 func findOption(a []models.Option, f func(models.Option) bool) (int, *models.Option, error) {
@@ -27,7 +26,7 @@ func findOption(a []models.Option, f func(models.Option) bool) (int, *models.Opt
 			return i, &v, nil
 		}
 	}
-	panic("Not found")
+	return -1, nil, fmt.Errorf("option not found")
 }
 
 func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, error) {
@@ -39,7 +38,7 @@ func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, err
 		return *empl, nil
 	}
 
-	panic(fmt.Sprintf("Could not find Employee with rfid '%s'", rfid))
+	return models.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
 }
 
 func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee, error) {
@@ -51,7 +50,7 @@ func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee,
 		return *empl, nil
 	}
 
-	panic(fmt.Sprintf("Could not find Employee with database id '%s'", id))
+	return models.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
 func (db *MemoryDatabase) InsertEmployee(empl models.Employee) error {
@@ -60,7 +59,7 @@ func (db *MemoryDatabase) InsertEmployee(empl models.Employee) error {
 	})
 
 	if err == nil && oldEmpl.DatabaseId == empl.DatabaseId {
-		panic(fmt.Sprintf("Employee with database id '%s' already exists", oldEmpl.DatabaseId))
+		return fmt.Errorf("employee with database id '%s' already exists", oldEmpl.DatabaseId)
 	}
 
 	db.employees = append(db.employees, empl)
@@ -83,7 +82,7 @@ func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props models.E
 		return nil
 	}
 
-	panic(fmt.Sprintf("Could not find Employee with database id '%s'", id))
+	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
 func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
@@ -97,7 +96,7 @@ func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
 		return nil
 	}
 
-	panic(fmt.Sprintf("Could not find Employee with database id '%s'", id))
+	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
 func (db *MemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (models.Option, error) {
@@ -109,7 +108,7 @@ func (db *MemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (models.
 		return *opt, nil
 	}
 
-	panic(fmt.Sprintf("Could not find Option with wrapper id '%d'", id))
+	return models.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
 }
 
 func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, error) {
@@ -121,7 +120,7 @@ func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, err
 		return *opt, nil
 	}
 
-	panic(fmt.Sprintf("Could not find Option with database id '%s'", id))
+	return models.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
 func (db *MemoryDatabase) InsertOption(opt models.Option) error {
@@ -130,7 +129,7 @@ func (db *MemoryDatabase) InsertOption(opt models.Option) error {
 	})
 
 	if err == nil && opt.DatabaseId == oldOpt.DatabaseId {
-		panic(fmt.Sprintf("Option with database id '%s' already exists", oldOpt.DatabaseId))
+		return fmt.Errorf("option with database id '%s' already exists", oldOpt.DatabaseId)
 	}
 
 	db.options = append(db.options, opt)
@@ -148,7 +147,7 @@ func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props models.Opt
 		opt.Available = props.Available
 	}
 
-	panic(fmt.Sprintf("Could not find Option with database id '%s'", id))
+	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
 func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
@@ -162,9 +161,9 @@ func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 		return nil
 	}
 
-	panic(fmt.Sprintf("Could not find Option with database id '%s'", id))
+	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) AddAction(models.Action) {
+func (db *MemoryDatabase) AddAction(models.Action) error {
 	panic("Not implemented")
 }
