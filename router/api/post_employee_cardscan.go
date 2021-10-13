@@ -22,11 +22,19 @@ func PostEmployeeCardscan(rw http.ResponseWriter, rq http.Request, db db.Abstrac
 	empl, err := db.GetEmployeeWithRfid(parsed.EmployeeRfid)
 
 	if err == nil {
-		db.AddAction(models.Action{
+		err := db.AddAction(models.Action{
 			Timestamp: time.Now(),
 			Option:    shared.WrapperEnum(2),
 			Rfid:      empl.Rfid,
+			DatabaseModel: models.DatabaseModel{
+				DatabaseId: utils.GenerateUUID(),
+			},
 		})
+
+		if err != nil {
+			utils.WriteServerError(rw, err)
+			return
+		}
 
 		encoded, err := utils.JsonEncode(rsm.GetEmployee{
 			Employee: em.Employee{
