@@ -9,6 +9,7 @@ import (
 type MemoryDatabase struct {
 	employees []models.Employee
 	options   []models.Option
+	actions   []models.Action
 }
 
 func findEmployee(a []models.Employee, f func(models.Employee) bool) (int, *models.Employee, error) {
@@ -27,6 +28,15 @@ func findOption(a []models.Option, f func(models.Option) bool) (int, *models.Opt
 		}
 	}
 	return -1, nil, fmt.Errorf("option not found")
+}
+
+func findAction(a []models.Action, f func(models.Action) bool) (int, *models.Action, error) {
+	for i, v := range a {
+		if f(v) {
+			return i, &v, nil
+		}
+	}
+	return -1, nil, fmt.Errorf("action not found")
 }
 
 func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, error) {
@@ -164,6 +174,15 @@ func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) AddAction(models.Action) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) AddAction(action models.Action) error {
+	_, oldAction, err := findAction(db.actions, func(e models.Action) bool {
+		return e.DatabaseId == action.DatabaseId
+	})
+
+	if err == nil && oldAction.DatabaseId == action.DatabaseId {
+		return fmt.Errorf("action with database id '%s' already exists", oldAction.DatabaseId)
+	}
+
+	db.actions = append(db.actions, action)
+	return nil
 }
