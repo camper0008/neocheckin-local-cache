@@ -19,4 +19,5 @@ type AbstractDatabase interface {
 	DeleteOptionWithDatabaseId(string) error
 
 	AddAction(models.Action) error
+	DeleteActionWithDatabaseId(string, models.Action) error
 }

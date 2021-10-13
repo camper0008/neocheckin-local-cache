@@ -186,3 +186,17 @@ func (db *MemoryDatabase) AddAction(action models.Action) error {
 	db.actions = append(db.actions, action)
 	return nil
 }
+
+func (db *MemoryDatabase) DeleteActionWithDatabaseId(id string, action models.Action) error {
+	i, _, err := findAction(db.actions, func(e models.Action) bool {
+		return e.DatabaseId == action.DatabaseId
+	})
+
+	if err == nil {
+		db.options[i] = db.options[len(db.options)-1]
+		db.options = db.options[:len(db.options)-1]
+		return nil
+	}
+
+	return fmt.Errorf("could not find Action with database id '%s'", id)
+}
