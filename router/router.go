@@ -3,11 +3,12 @@ package router
 import (
 	"neocheckin_cache/database"
 	"net/http"
+	"regexp"
 )
 
 type Endpoint struct {
 	Path    string
-	Handler func(*http.ResponseWriter, http.Request, database.AbstractDatabase)
+	Handler func(http.ResponseWriter, http.Request, database.AbstractDatabase)
 	Method  string
 }
 
@@ -20,9 +21,11 @@ func (r *Router) Register(e Endpoint) {
 	r.endpoints = append(r.endpoints, e)
 }
 
-func (r *Router) Handle(rw *http.ResponseWriter, rq http.Request, db database.AbstractDatabase) {
+func (r *Router) Handle(rw http.ResponseWriter, rq http.Request, db database.AbstractDatabase) {
 	for i := range r.endpoints {
-		if rq.URL.Path == (r.Path+r.endpoints[i].Path) && rq.Method == r.endpoints[i].Method {
+		reP := regexp.MustCompile("^" + r.Path + r.endpoints[i].Path + "$")
+
+		if reP.FindString(rq.URL.Path) != "" && rq.Method == r.endpoints[i].Method {
 			r.endpoints[i].Handler(rw, rq, db)
 		}
 	}

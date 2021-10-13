@@ -3,35 +3,39 @@ package api
 import (
 	"fmt"
 	db "neocheckin_cache/database"
+	"neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
+	"neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
+	"neocheckin_cache/shared"
 	"neocheckin_cache/utils"
 	"net/http"
+	"time"
 )
 
-func getRfidFromPath(p string) string {
-	i := 0
-	a := make([]byte, len(p))
-	for c := range p {
-		a[c-i] = p[c]
-		if p[c] == '/' {
-			i = c + 1
-			a = make([]byte, len(p)-i)
-		}
-	}
-
-	return string(a)
-}
-
-func GetEmployeeFromRfid(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func PostEmployeeCardscan(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
-	p := rq.URL.Path
-	rfid := getRfidFromPath(p)
+	parsed := request_models.CardScanned{}
+	utils.ParseBody(rq, &parsed)
 
-	empl, err := db.GetEmployeeWithRfid(rfid)
+	empl, err := db.GetEmployeeWithRfid(parsed.EmployeeRfid)
 
 	if err == nil {
+		err := db.AddAction(models.Action{
+			Timestamp: time.Now(),
+			Option:    shared.WrapperEnum(2),
+			Rfid:      empl.Rfid,
+			DatabaseModel: models.DatabaseModel{
+				DatabaseId: utils.GenerateUUID(),
+			},
+		})
+
+		if err != nil {
+			utils.WriteServerError(rw, err)
+			return
+		}
+
 		encoded, err := utils.JsonEncode(rsm.GetEmployee{
 			Employee: em.Employee{
 				Name:       empl.Name,

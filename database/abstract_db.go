@@ -1,22 +1,23 @@
 package database
 
 import (
-	"neocheckin_cache/database/database_models"
+	"neocheckin_cache/database/models"
 	"neocheckin_cache/shared"
 )
 
 type AbstractDatabase interface {
-	GetEmployeeWithRfid(string) database_models.Employee
-	GetEmployeeWithDatabaseId(string) database_models.Employee
-	InsertEmployee(database_models.Employee)
-	UpdateEmployeeWithDatabaseId(string, database_models.Employee)
-	DeleteEmployeeWithDatabaseId(string, database_models.Employee)
+	GetEmployeeWithRfid(string) (models.Employee, error)
+	GetEmployeeWithDatabaseId(string) (models.Employee, error)
+	InsertEmployee(models.Employee) error
+	UpdateEmployeeWithDatabaseId(string, models.Employee) error
+	DeleteEmployeeWithDatabaseId(string) error
 
-	GetOptionWithWrapperId(shared.WrapperEnum) database_models.Option
-	GetOptionWithDatabaseId(string) database_models.Option
-	InsertOption(database_models.Option)
-	UpdateOptionWithDatabaseId(string, database_models.Option)
-	DeleteOptionWithDatabaseId(string, database_models.Option)
+	GetOptionWithWrapperId(shared.WrapperEnum) (models.Option, error)
+	GetOptionWithDatabaseId(string) (models.Option, error)
+	InsertOption(models.Option) error
+	UpdateOptionWithDatabaseId(string, models.Option) error
+	DeleteOptionWithDatabaseId(string) error
 
-	AddAction(database_models.Action)
+	AddAction(models.Action) error
+	DeleteActionWithDatabaseId(string, models.Action) error
 }

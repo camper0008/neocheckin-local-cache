@@ -5,6 +5,6 @@ import (
 )
 
 type WorkingEmployees struct {
-	Employees []exported_models.Employee
-	Ordered   map[string][]exported_models.Employee
+	Employees []exported_models.Employee            `json:"employees"`
+	Ordered   map[string][]exported_models.Employee `json:"ordered"`
 }
