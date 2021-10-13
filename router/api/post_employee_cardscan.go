@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func PostEmployeeCardscan(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
 	parsed := request_models.CardScanned{}
