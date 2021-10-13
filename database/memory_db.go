@@ -12,64 +12,157 @@ type MemoryDatabase struct {
 	options   []models.Option
 }
 
-func findEmployee(a []models.Employee, f func(models.Employee) bool) (models.Employee, error) {
-	for _, v := range a {
+func findEmployee(a []models.Employee, f func(models.Employee) bool) (int, *models.Employee, error) {
+	for i, v := range a {
 		if f(v) {
-			return v, nil
+			return i, &v, nil
+		}
+	}
+	panic("Not found")
+}
+
+func findOption(a []models.Option, f func(models.Option) bool) (int, *models.Option, error) {
+	for i, v := range a {
+		if f(v) {
+			return i, &v, nil
 		}
 	}
 	panic("Not found")
 }
 
 func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, error) {
-	employees, err := findEmployee(db.employees, func(model models.Employee) bool {
-		return true
+	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+		return e.Rfid == rfid
 	})
 
-	print(employees, err)
-
-	for i := range db.employees {
-		if db.employees[i].Rfid == rfid {
-			return db.employees[i], nil
-		}
+	if err == nil {
+		return *empl, nil
 	}
+
 	panic(fmt.Sprintf("Could not find Employee with rfid '%s'", rfid))
 }
 
-func (db *MemoryDatabase) GetEmployeeWithDatabaseId(string) models.Employee {
-	panic("Not implemented")
+func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee, error) {
+	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		return *empl, nil
+	}
+
+	panic(fmt.Sprintf("Could not find Employee with database id '%s'", id))
 }
 
-func (db *MemoryDatabase) InsertEmployee(models.Employee) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) InsertEmployee(empl models.Employee) error {
+	_, oldEmpl, err := findEmployee(db.employees, func(e models.Employee) bool {
+		return e.DatabaseId == empl.DatabaseId
+	})
+
+	if err == nil && oldEmpl.DatabaseId == empl.DatabaseId {
+		panic(fmt.Sprintf("Employee with database id '%s' already exists", oldEmpl.DatabaseId))
+	}
+
+	db.employees = append(db.employees, empl)
+	return nil
 }
 
-func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(string, models.Employee) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props models.Employee) error {
+	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		empl.Rfid = props.Rfid
+		empl.Name = props.Name
+		empl.Flex = props.Flex
+		empl.Working = props.Working
+		empl.Department = props.Department
+		empl.Photo = props.Photo
+
+		return nil
+	}
+
+	panic(fmt.Sprintf("Could not find Employee with database id '%s'", id))
 }
 
-func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(string, models.Employee) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
+	i, _, err := findEmployee(db.employees, func(e models.Employee) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		db.employees[i] = db.employees[len(db.employees)-1]
+		db.employees = db.employees[:len(db.employees)-1]
+		return nil
+	}
+
+	panic(fmt.Sprintf("Could not find Employee with database id '%s'", id))
 }
 
-func (db *MemoryDatabase) GetOptionWithWrapperId(shared.WrapperEnum) (models.Option, error) {
-	panic("Not implemented")
+func (db *MemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (models.Option, error) {
+	_, opt, err := findOption(db.options, func(o models.Option) bool {
+		return o.WrapperId == id
+	})
+
+	if err == nil {
+		return *opt, nil
+	}
+
+	panic(fmt.Sprintf("Could not find Option with wrapper id '%d'", id))
 }
 
-func (db *MemoryDatabase) GetOptionWithDatabaseId(string) (models.Option, error) {
-	panic("Not implemented")
+func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, error) {
+	_, opt, err := findOption(db.options, func(o models.Option) bool {
+		return o.DatabaseId == id
+	})
+
+	if err == nil {
+		return *opt, nil
+	}
+
+	panic(fmt.Sprintf("Could not find Option with database id '%s'", id))
 }
 
-func (db *MemoryDatabase) InsertOption(models.Option) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) InsertOption(opt models.Option) error {
+	_, oldOpt, err := findOption(db.options, func(o models.Option) bool {
+		return o.DatabaseId == opt.DatabaseId
+	})
+
+	if err == nil && opt.DatabaseId == oldOpt.DatabaseId {
+		panic(fmt.Sprintf("Option with database id '%s' already exists", oldOpt.DatabaseId))
+	}
+
+	db.options = append(db.options, opt)
+	return nil
 }
 
-func (db *MemoryDatabase) UpdateOptionWithDatabaseId(string, models.Option) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props models.Option) error {
+	_, opt, err := findOption(db.options, func(o models.Option) bool {
+		return o.DatabaseId == id
+	})
+
+	if err == nil {
+		opt.Name = props.Name
+		opt.WrapperId = props.WrapperId
+		opt.Available = props.Available
+	}
+
+	panic(fmt.Sprintf("Could not find Option with database id '%s'", id))
 }
 
-func (db *MemoryDatabase) DeleteOptionWithDatabaseId(string, models.Option) error {
-	panic("Not implemented")
+func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
+	i, _, err := findOption(db.options, func(e models.Option) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		db.options[i] = db.options[len(db.options)-1]
+		db.options = db.options[:len(db.options)-1]
+		return nil
+	}
+
+	panic(fmt.Sprintf("Could not find Option with database id '%s'", id))
 }
 
 func (db *MemoryDatabase) AddAction(models.Action) {
