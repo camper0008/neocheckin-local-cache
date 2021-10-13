@@ -16,6 +16,21 @@ func WriteError(rw http.ResponseWriter, err error) {
 		fmt.Fprintf(rw, "%s", encoded)
 		return
 	} else {
+		WriteServerError(rw, err)
+		return
+	}
+}
+
+func WriteServerError(rw http.ResponseWriter, err error) {
+	encoded, err := JsonEncode(rsm.Error{
+		Error: err.Error(),
+	})
+
+	if err == nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(rw, "%s", encoded)
+		return
+	} else {
 		rw.WriteHeader(http.StatusInternalServerError)
 		return
 	}

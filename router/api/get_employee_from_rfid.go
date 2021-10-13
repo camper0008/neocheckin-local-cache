@@ -46,7 +46,7 @@ func GetEmployeeFromRfid(rw http.ResponseWriter, rq http.Request, db db.Abstract
 			fmt.Fprintf(rw, "%s", encoded)
 			return
 		} else {
-			rw.WriteHeader(http.StatusInternalServerError)
+			utils.WriteServerError(rw, err)
 			return
 		}
 	} else {
