@@ -10,11 +10,13 @@ import (
 )
 
 func getRfidFromPath(p string) string {
+	i := 0
 	a := make([]byte, len(p))
 	for c := range p {
-		a = append(a, p[c])
+		a[c-i] = p[c]
 		if p[c] == '/' {
-			a = make([]byte, len(p)-c)
+			i = c + 1
+			a = make([]byte, len(p)-i)
 		}
 	}
 
