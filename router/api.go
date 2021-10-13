@@ -11,6 +11,11 @@ func ConnectAPI(db database.AbstractDatabase) Router {
 	}
 
 	router.Register(Endpoint{
+		Path:    `/employee/cardscanned`,
+		Method:  "POST",
+		Handler: api.PostEmployeeCardscan,
+	})
+	router.Register(Endpoint{
 		Path:    `/employee/[^\\]+`,
 		Method:  "GET",
 		Handler: api.GetEmployeeFromRfid,
