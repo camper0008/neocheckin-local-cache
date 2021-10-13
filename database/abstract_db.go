@@ -7,7 +7,7 @@ import (
 
 type AbstractDatabase interface {
 	GetEmployeeWithRfid(string) (models.Employee, error)
-	GetEmployeeWithDatabaseId(string) models.Employee
+	GetEmployeeWithDatabaseId(string) (models.Employee, error)
 	InsertEmployee(models.Employee) error
 	UpdateEmployeeWithDatabaseId(string, models.Employee) error
 	DeleteEmployeeWithDatabaseId(string) error
