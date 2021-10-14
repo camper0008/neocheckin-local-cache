@@ -24,7 +24,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	if err == nil {
 		err := db.AddAction(models.Action{
 			Timestamp: time.Now(),
-			Option:    shared.WrapperEnum(2),
+			Option:    shared.WrapperEnum(parsed.Option),
 			Rfid:      empl.Rfid,
 			DatabaseModel: models.DatabaseModel{
 				DatabaseId: utils.GenerateUUID(),
