@@ -2,7 +2,7 @@ package api
 
 import (
 	"neocheckin_cache/database"
-	"neocheckin_cache/database/models"
+	m "neocheckin_cache/database/models"
 	"testing"
 )
 
@@ -25,7 +25,7 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 	{ // 1 employees in database
 		db := database.MockMemoryDatabase{}
 
-		mockEmployee := models.Employee{
+		mockEmployee := m.Employee{
 			Rfid:       "12345678",
 			Name:       "Ole Soelberg",
 			Flex:       3600,
@@ -55,9 +55,9 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 	{ // multiple employees
 		db := database.MockMemoryDatabase{}
 
-		employees := []models.Employee{
+		employees := []m.Employee{
 			{
-				DatabaseModel: models.DatabaseModel{
+				DatabaseModel: m.DatabaseModel{
 					DatabaseId: "0",
 				},
 				Rfid:       "87654321",
@@ -68,7 +68,7 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Photo:      "base64:iguess",
 			},
 			{
-				DatabaseModel: models.DatabaseModel{
+				DatabaseModel: m.DatabaseModel{
 					DatabaseId: "1",
 				},
 				Rfid:       "12345678",
@@ -79,7 +79,7 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Photo:      "base64:iguess",
 			},
 			{
-				DatabaseModel: models.DatabaseModel{
+				DatabaseModel: m.DatabaseModel{
 					DatabaseId: "2",
 				},
 				Rfid:       "12345678",

@@ -2,14 +2,14 @@ package main
 
 import (
 	"neocheckin_cache/database"
-	"neocheckin_cache/database/models"
+	m "neocheckin_cache/database/models"
 	"neocheckin_cache/router"
 	"net/http"
 )
 
 func main() {
 	db := database.MemoryDatabase{}
-	db.InsertEmployee(models.Employee{
+	db.InsertEmployee(m.Employee{
 		Rfid:       "rfid",
 		Name:       "rfid",
 		Flex:       50,

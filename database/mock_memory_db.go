@@ -2,7 +2,7 @@ package database
 
 import (
 	"fmt"
-	"neocheckin_cache/database/models"
+	m "neocheckin_cache/database/models"
 	"neocheckin_cache/shared"
 )
 
@@ -11,9 +11,9 @@ type MockMemoryDatabase struct {
 	GetEmployeeWithRfidCallAmount int
 }
 
-func (db *MockMemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, error) {
+func (db *MockMemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
 	db.GetEmployeeWithRfidCallAmount++
-	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.Rfid == rfid
 	})
 
@@ -21,12 +21,12 @@ func (db *MockMemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee,
 		return *empl, nil
 	}
 
-	return models.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
+	return m.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
 }
 
-func (db *MockMemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee, error) {
+func (db *MockMemoryDatabase) GetEmployeeWithDatabaseId(id string) (m.Employee, error) {
 
-	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
@@ -34,15 +34,15 @@ func (db *MockMemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Emplo
 		return *empl, nil
 	}
 
-	return models.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
+	return m.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) GetAllEmployees() ([]models.Employee, error) {
+func (db *MockMemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 	return db.employees, nil
 }
 
-func (db *MockMemoryDatabase) InsertEmployee(empl models.Employee) error {
-	_, oldEmpl, err := findEmployee(db.employees, func(e models.Employee) bool {
+func (db *MockMemoryDatabase) InsertEmployee(empl m.Employee) error {
+	_, oldEmpl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == empl.DatabaseId
 	})
 
@@ -54,8 +54,8 @@ func (db *MockMemoryDatabase) InsertEmployee(empl models.Employee) error {
 	return nil
 }
 
-func (db *MockMemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props models.Employee) error {
-	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+func (db *MockMemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employee) error {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
@@ -74,7 +74,7 @@ func (db *MockMemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props mode
 }
 
 func (db *MockMemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
-	i, _, err := findEmployee(db.employees, func(e models.Employee) bool {
+	i, _, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
@@ -87,8 +87,8 @@ func (db *MockMemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (models.Option, error) {
-	_, opt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MockMemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (m.Option, error) {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.WrapperId == id
 	})
 
@@ -96,11 +96,11 @@ func (db *MockMemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (mod
 		return *opt, nil
 	}
 
-	return models.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
+	return m.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
 }
 
-func (db *MockMemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, error) {
-	_, opt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MockMemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, error) {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
 
@@ -108,15 +108,15 @@ func (db *MockMemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option,
 		return *opt, nil
 	}
 
-	return models.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
+	return m.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) GetAllOptions() ([]models.Option, error) {
+func (db *MockMemoryDatabase) GetAllOptions() ([]m.Option, error) {
 	return db.options, nil
 }
 
-func (db *MockMemoryDatabase) InsertOption(opt models.Option) error {
-	_, oldOpt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MockMemoryDatabase) InsertOption(opt m.Option) error {
+	_, oldOpt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == opt.DatabaseId
 	})
 
@@ -128,8 +128,8 @@ func (db *MockMemoryDatabase) InsertOption(opt models.Option) error {
 	return nil
 }
 
-func (db *MockMemoryDatabase) UpdateOptionWithDatabaseId(id string, props models.Option) error {
-	_, opt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MockMemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) error {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
 
@@ -143,7 +143,7 @@ func (db *MockMemoryDatabase) UpdateOptionWithDatabaseId(id string, props models
 }
 
 func (db *MockMemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
-	i, _, err := findOption(db.options, func(e models.Option) bool {
+	i, _, err := findOption(db.options, func(e m.Option) bool {
 		return e.DatabaseId == id
 	})
 
@@ -156,8 +156,8 @@ func (db *MockMemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) AddAction(action models.Action) error {
-	_, oldAction, err := findAction(db.actions, func(e models.Action) bool {
+func (db *MockMemoryDatabase) AddAction(action m.Action) error {
+	_, oldAction, err := findAction(db.actions, func(e m.Action) bool {
 		return e.DatabaseId == action.DatabaseId
 	})
 
@@ -169,12 +169,12 @@ func (db *MockMemoryDatabase) AddAction(action models.Action) error {
 	return nil
 }
 
-func (db *MockMemoryDatabase) GetAllActions() ([]models.Action, error) {
+func (db *MockMemoryDatabase) GetAllActions() ([]m.Action, error) {
 	return db.actions, nil
 }
 
-func (db *MockMemoryDatabase) DeleteActionWithDatabaseId(id string, action models.Action) error {
-	i, _, err := findAction(db.actions, func(e models.Action) bool {
+func (db *MockMemoryDatabase) DeleteActionWithDatabaseId(id string, action m.Action) error {
+	i, _, err := findAction(db.actions, func(e m.Action) bool {
 		return e.DatabaseId == action.DatabaseId
 	})
 

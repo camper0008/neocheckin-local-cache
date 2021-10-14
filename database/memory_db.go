@@ -2,17 +2,17 @@ package database
 
 import (
 	"fmt"
-	"neocheckin_cache/database/models"
+	m "neocheckin_cache/database/models"
 	"neocheckin_cache/shared"
 )
 
 type MemoryDatabase struct {
-	employees []models.Employee
-	options   []models.Option
-	actions   []models.Action
+	employees []m.Employee
+	options   []m.Option
+	actions   []m.Action
 }
 
-func findEmployee(a []models.Employee, f func(models.Employee) bool) (int, *models.Employee, error) {
+func findEmployee(a []m.Employee, f func(m.Employee) bool) (int, *m.Employee, error) {
 	for i, v := range a {
 		if f(v) {
 			return i, &v, nil
@@ -21,7 +21,7 @@ func findEmployee(a []models.Employee, f func(models.Employee) bool) (int, *mode
 	return -1, nil, fmt.Errorf("employee not found")
 }
 
-func findOption(a []models.Option, f func(models.Option) bool) (int, *models.Option, error) {
+func findOption(a []m.Option, f func(m.Option) bool) (int, *m.Option, error) {
 	for i, v := range a {
 		if f(v) {
 			return i, &v, nil
@@ -30,7 +30,7 @@ func findOption(a []models.Option, f func(models.Option) bool) (int, *models.Opt
 	return -1, nil, fmt.Errorf("option not found")
 }
 
-func findAction(a []models.Action, f func(models.Action) bool) (int, *models.Action, error) {
+func findAction(a []m.Action, f func(m.Action) bool) (int, *m.Action, error) {
 	for i, v := range a {
 		if f(v) {
 			return i, &v, nil
@@ -39,8 +39,8 @@ func findAction(a []models.Action, f func(models.Action) bool) (int, *models.Act
 	return -1, nil, fmt.Errorf("action not found")
 }
 
-func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, error) {
-	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.Rfid == rfid
 	})
 
@@ -48,11 +48,11 @@ func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, err
 		return *empl, nil
 	}
 
-	return models.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
+	return m.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
 }
 
-func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee, error) {
-	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (m.Employee, error) {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
@@ -60,15 +60,15 @@ func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee,
 		return *empl, nil
 	}
 
-	return models.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
+	return m.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) GetAllEmployees() ([]models.Employee, error) {
+func (db *MemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 	return db.employees, nil
 }
 
-func (db *MemoryDatabase) InsertEmployee(empl models.Employee) error {
-	_, oldEmpl, err := findEmployee(db.employees, func(e models.Employee) bool {
+func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
+	_, oldEmpl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == empl.DatabaseId
 	})
 
@@ -80,8 +80,8 @@ func (db *MemoryDatabase) InsertEmployee(empl models.Employee) error {
 	return nil
 }
 
-func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props models.Employee) error {
-	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
+func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employee) error {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
@@ -100,7 +100,7 @@ func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props models.E
 }
 
 func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
-	i, _, err := findEmployee(db.employees, func(e models.Employee) bool {
+	i, _, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
@@ -113,8 +113,8 @@ func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (models.Option, error) {
-	_, opt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (m.Option, error) {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.WrapperId == id
 	})
 
@@ -122,11 +122,11 @@ func (db *MemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (models.
 		return *opt, nil
 	}
 
-	return models.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
+	return m.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
 }
 
-func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, error) {
-	_, opt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, error) {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
 
@@ -134,15 +134,15 @@ func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, err
 		return *opt, nil
 	}
 
-	return models.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
+	return m.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) GetAllOptions() ([]models.Option, error) {
+func (db *MemoryDatabase) GetAllOptions() ([]m.Option, error) {
 	return db.options, nil
 }
 
-func (db *MemoryDatabase) InsertOption(opt models.Option) error {
-	_, oldOpt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MemoryDatabase) InsertOption(opt m.Option) error {
+	_, oldOpt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == opt.DatabaseId
 	})
 
@@ -154,8 +154,8 @@ func (db *MemoryDatabase) InsertOption(opt models.Option) error {
 	return nil
 }
 
-func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props models.Option) error {
-	_, opt, err := findOption(db.options, func(o models.Option) bool {
+func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) error {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
 
@@ -169,7 +169,7 @@ func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props models.Opt
 }
 
 func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
-	i, _, err := findOption(db.options, func(e models.Option) bool {
+	i, _, err := findOption(db.options, func(e m.Option) bool {
 		return e.DatabaseId == id
 	})
 
@@ -182,8 +182,8 @@ func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) AddAction(action models.Action) error {
-	_, oldAction, err := findAction(db.actions, func(e models.Action) bool {
+func (db *MemoryDatabase) AddAction(action m.Action) error {
+	_, oldAction, err := findAction(db.actions, func(e m.Action) bool {
 		return e.DatabaseId == action.DatabaseId
 	})
 
@@ -195,12 +195,12 @@ func (db *MemoryDatabase) AddAction(action models.Action) error {
 	return nil
 }
 
-func (db *MemoryDatabase) GetAllActions() ([]models.Action, error) {
+func (db *MemoryDatabase) GetAllActions() ([]m.Action, error) {
 	return db.actions, nil
 }
 
-func (db *MemoryDatabase) DeleteActionWithDatabaseId(id string, action models.Action) error {
-	i, _, err := findAction(db.actions, func(e models.Action) bool {
+func (db *MemoryDatabase) DeleteActionWithDatabaseId(id string, action m.Action) error {
+	i, _, err := findAction(db.actions, func(e m.Action) bool {
 		return e.DatabaseId == action.DatabaseId
 	})
 

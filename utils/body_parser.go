@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"neocheckin_cache/router/api/models/request_models"
+	rqm "neocheckin_cache/router/api/models/request_models"
 	"net/http"
 )
 
-func ParseBody(r http.Request, m *request_models.CardScanned) error {
+func ParseBody(r http.Request, m *rqm.CardScanned) error {
 	headerContentType := r.Header.Get("Content-Type")
 	if headerContentType != "application/json" {
 		return fmt.Errorf("invalid content type, got '%s', expected 'application/json'", headerContentType)
