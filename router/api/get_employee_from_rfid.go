@@ -30,7 +30,7 @@ func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db db.
 	p := rq.URL.Path
 	rfid := getRfidFromPath(p)
 
-	empl, err := db.GetEmployeeWithRfid(rfid)
+	empl, err := GetEmployeeFromRfid(db, rfid)
 
 	if err == nil {
 		encoded, err := utils.JsonEncode(rsm.GetEmployee{
