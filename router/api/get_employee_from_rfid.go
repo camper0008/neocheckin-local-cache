@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	db "neocheckin_cache/database"
+	"neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
 	"neocheckin_cache/utils"
@@ -23,7 +24,7 @@ func getRfidFromPath(p string) string {
 	return string(a)
 }
 
-func GetEmployeeFromRfid(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
 	p := rq.URL.Path
@@ -52,4 +53,13 @@ func GetEmployeeFromRfid(rw http.ResponseWriter, rq http.Request, db db.Abstract
 	} else {
 		utils.WriteError(rw, err)
 	}
+}
+
+func GetEmployeeFromRfid(db db.AbstractDatabase, rfid string) (models.Employee, error) {
+	empl, err := db.GetEmployeeWithRfid(rfid)
+	if err != nil {
+		fmt.Println(rfid, empl, err)
+		return models.Employee{}, fmt.Errorf("not found")
+	}
+	return empl, nil
 }

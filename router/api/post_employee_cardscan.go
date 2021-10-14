@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func PostEmployeeCardscan(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
 	parsed := request_models.CardScanned{}
@@ -24,7 +24,7 @@ func PostEmployeeCardscan(rw http.ResponseWriter, rq http.Request, db db.Abstrac
 	if err == nil {
 		err := db.AddAction(models.Action{
 			Timestamp: time.Now(),
-			Option:    shared.WrapperEnum(2),
+			Option:    shared.WrapperEnum(parsed.Option),
 			Rfid:      empl.Rfid,
 			DatabaseModel: models.DatabaseModel{
 				DatabaseId: utils.GenerateUUID(),
