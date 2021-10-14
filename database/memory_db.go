@@ -63,6 +63,10 @@ func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee,
 	return models.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
+func (db *MemoryDatabase) GetAllEmployees() ([]models.Employee, error) {
+	return db.employees, nil
+}
+
 func (db *MemoryDatabase) InsertEmployee(empl models.Employee) error {
 	_, oldEmpl, err := findEmployee(db.employees, func(e models.Employee) bool {
 		return e.DatabaseId == empl.DatabaseId
@@ -133,6 +137,10 @@ func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option, err
 	return models.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
+func (db *MemoryDatabase) GetAllOptions() ([]models.Option, error) {
+	return db.options, nil
+}
+
 func (db *MemoryDatabase) InsertOption(opt models.Option) error {
 	_, oldOpt, err := findOption(db.options, func(o models.Option) bool {
 		return o.DatabaseId == opt.DatabaseId
@@ -185,6 +193,10 @@ func (db *MemoryDatabase) AddAction(action models.Action) error {
 
 	db.actions = append(db.actions, action)
 	return nil
+}
+
+func (db *MemoryDatabase) GetAllActions() ([]models.Action, error) {
+	return db.actions, nil
 }
 
 func (db *MemoryDatabase) DeleteActionWithDatabaseId(id string, action models.Action) error {

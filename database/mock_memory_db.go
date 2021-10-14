@@ -37,6 +37,10 @@ func (db *MockMemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Emplo
 	return models.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
+func (db *MockMemoryDatabase) GetAllEmployees() ([]models.Employee, error) {
+	return db.employees, nil
+}
+
 func (db *MockMemoryDatabase) InsertEmployee(empl models.Employee) error {
 	_, oldEmpl, err := findEmployee(db.employees, func(e models.Employee) bool {
 		return e.DatabaseId == empl.DatabaseId
@@ -107,6 +111,10 @@ func (db *MockMemoryDatabase) GetOptionWithDatabaseId(id string) (models.Option,
 	return models.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
+func (db *MockMemoryDatabase) GetAllOptions() ([]models.Option, error) {
+	return db.options, nil
+}
+
 func (db *MockMemoryDatabase) InsertOption(opt models.Option) error {
 	_, oldOpt, err := findOption(db.options, func(o models.Option) bool {
 		return o.DatabaseId == opt.DatabaseId
@@ -159,6 +167,10 @@ func (db *MockMemoryDatabase) AddAction(action models.Action) error {
 
 	db.actions = append(db.actions, action)
 	return nil
+}
+
+func (db *MockMemoryDatabase) GetAllActions() ([]models.Action, error) {
+	return db.actions, nil
 }
 
 func (db *MockMemoryDatabase) DeleteActionWithDatabaseId(id string, action models.Action) error {
