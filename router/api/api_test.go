@@ -57,9 +57,6 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 
 		employees := []m.Employee{
 			{
-				DatabaseModel: m.DatabaseModel{
-					DatabaseId: "0",
-				},
 				Rfid:       "87654321",
 				Name:       "Ole Helledie",
 				Flex:       -3600,
@@ -68,9 +65,6 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Photo:      "base64:iguess",
 			},
 			{
-				DatabaseModel: m.DatabaseModel{
-					DatabaseId: "1",
-				},
 				Rfid:       "12345678",
 				Name:       "Ole Soelberg",
 				Flex:       3600,
@@ -79,9 +73,6 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Photo:      "base64:iguess",
 			},
 			{
-				DatabaseModel: m.DatabaseModel{
-					DatabaseId: "2",
-				},
 				Rfid:       "12345678",
 				Name:       "Praktikplads Taber",
 				Flex:       6969,

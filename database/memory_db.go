@@ -4,6 +4,7 @@ import (
 	"fmt"
 	m "neocheckin_cache/database/models"
 	"neocheckin_cache/shared"
+	"neocheckin_cache/utils"
 )
 
 type MemoryDatabase struct {
@@ -68,6 +69,9 @@ func (db *MemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 }
 
 func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
+	if empl.DatabaseId == "" {
+		empl.DatabaseId = utils.GenerateUUID()
+	}
 	_, oldEmpl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == empl.DatabaseId
 	})
@@ -142,6 +146,10 @@ func (db *MemoryDatabase) GetAllOptions() ([]m.Option, error) {
 }
 
 func (db *MemoryDatabase) InsertOption(opt m.Option) error {
+	if opt.DatabaseId == "" {
+		opt.DatabaseId = utils.GenerateUUID()
+	}
+
 	_, oldOpt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == opt.DatabaseId
 	})
