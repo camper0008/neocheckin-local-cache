@@ -12,6 +12,7 @@ type MockMemoryDatabase struct {
 }
 
 func (db *MockMemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee, error) {
+	db.GetEmployeeWithRfidCallAmount++
 	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
 		return e.Rfid == rfid
 	})
@@ -24,7 +25,6 @@ func (db *MockMemoryDatabase) GetEmployeeWithRfid(rfid string) (models.Employee,
 }
 
 func (db *MockMemoryDatabase) GetEmployeeWithDatabaseId(id string) (models.Employee, error) {
-	db.GetEmployeeWithRfidCallAmount++
 
 	_, empl, err := findEmployee(db.employees, func(e models.Employee) bool {
 		return e.DatabaseId == id

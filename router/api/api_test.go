@@ -17,8 +17,8 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 			t.Errorf("should call db.GetEmployeeWithRfid once")
 		}
 
-		if err.Error() != "Not found" {
-			t.Errorf("should return error \"Not found\"")
+		if err.Error() != "not found" {
+			t.Errorf("should return error \"not found\"")
 		}
 	}
 
@@ -57,6 +57,9 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 
 		employees := []models.Employee{
 			{
+				DatabaseModel: models.DatabaseModel{
+					DatabaseId: "0",
+				},
 				Rfid:       "87654321",
 				Name:       "Ole Helledie",
 				Flex:       -3600,
@@ -65,6 +68,9 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Photo:      "base64:iguess",
 			},
 			{
+				DatabaseModel: models.DatabaseModel{
+					DatabaseId: "1",
+				},
 				Rfid:       "12345678",
 				Name:       "Ole Soelberg",
 				Flex:       3600,
@@ -73,6 +79,9 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Photo:      "base64:iguess",
 			},
 			{
+				DatabaseModel: models.DatabaseModel{
+					DatabaseId: "2",
+				},
 				Rfid:       "12345678",
 				Name:       "Praktikplads Taber",
 				Flex:       6969,
@@ -102,7 +111,7 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 
 		employee, err = GetEmployeeFromRfid(&db, "01010101")
 
-		if err != nil {
+		if err == nil {
 			t.Errorf("should return error")
 		}
 
