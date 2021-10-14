@@ -3,9 +3,9 @@ package api
 import (
 	"fmt"
 	db "neocheckin_cache/database"
-	m "neocheckin_cache/database/models"
+	"neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
-	rqm "neocheckin_cache/router/api/models/request_models"
+	"neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
 	"neocheckin_cache/shared"
 	"neocheckin_cache/utils"
@@ -16,17 +16,17 @@ import (
 func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
-	parsed := rqm.CardScanned{}
+	var parsed request_models.CardScanned
 	utils.ParseBody(rq, &parsed)
 
 	empl, err := db.GetEmployeeWithRfid(parsed.EmployeeRfid)
 
 	if err == nil {
-		err := db.AddAction(m.Action{
+		err := db.AddAction(models.Action{
 			Timestamp: time.Now(),
 			Option:    shared.WrapperEnum(parsed.Option),
 			Rfid:      empl.Rfid,
-			DatabaseModel: m.DatabaseModel{
+			DatabaseModel: models.DatabaseModel{
 				DatabaseId: utils.GenerateUUID(),
 			},
 		})
