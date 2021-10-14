@@ -58,7 +58,6 @@ func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db db.
 func GetEmployeeFromRfid(db db.AbstractDatabase, rfid string) (models.Employee, error) {
 	empl, err := db.GetEmployeeWithRfid(rfid)
 	if err != nil {
-		fmt.Println(rfid, empl, err)
 		return models.Employee{}, fmt.Errorf("not found")
 	}
 	return empl, nil
