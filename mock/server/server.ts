@@ -121,9 +121,14 @@ const server = () => {
         });
     });
     
-    app.post('/api/tasks/types', (req, res) => {
+    app.post('/api/tasks/add', (req, res) => {
         const {taskId, name, employeeId, highLevelApiKey, systemIdentifier}: addTaskRequest = req.body;
-        if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier))
+        if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier)) {
+
+        } else {
+            return res.status(400).json({error: "missing values"})
+        }
+
         return res.status(200).json();
     });
 
