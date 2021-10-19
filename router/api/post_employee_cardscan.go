@@ -7,7 +7,6 @@ import (
 	em "neocheckin_cache/router/api/models/exported_models"
 	"neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
-	"neocheckin_cache/shared"
 	"neocheckin_cache/utils"
 	"net/http"
 	"time"
@@ -24,7 +23,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	if err == nil {
 		err := db.AddAction(models.Action{
 			Timestamp: time.Now(),
-			Option:    shared.WrapperEnum(parsed.Option),
+			Option:    parsed.Option,
 			Rfid:      empl.Rfid,
 		})
 

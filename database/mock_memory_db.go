@@ -3,7 +3,6 @@ package database
 import (
 	"fmt"
 	m "neocheckin_cache/database/models"
-	"neocheckin_cache/shared"
 	"neocheckin_cache/utils"
 )
 
@@ -92,7 +91,7 @@ func (db *MockMemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) GetOptionWithWrapperId(id shared.WrapperEnum) (m.Option, error) {
+func (db *MockMemoryDatabase) GetOptionWithWrapperId(id int) (m.Option, error) {
 	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.WrapperId == id
 	})

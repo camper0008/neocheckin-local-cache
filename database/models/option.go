@@ -1,12 +1,8 @@
 package models
 
-import (
-	"neocheckin_cache/shared"
-)
-
 type Option struct {
 	DatabaseModel
-	WrapperId shared.WrapperEnum
+	WrapperId int
 	Name      string
 	Available bool
 }
