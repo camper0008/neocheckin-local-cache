@@ -42,12 +42,8 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 			t.Errorf("should not return error")
 		}
 
-		if employee != mockEmployee {
-			t.Errorf("should match")
-		}
-
 		if employee.Name != mockEmployee.Name {
-			t.Errorf("should match")
+			t.Errorf("should match, expected %q got %q", employee.Name, mockEmployee.Name)
 		}
 
 	}
@@ -92,12 +88,8 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 			t.Errorf("should not return error")
 		}
 
-		if employees[1] != employee {
-			t.Errorf("should match")
-		}
-
 		if employees[1].Name != employee.Name {
-			t.Errorf("should match")
+			t.Errorf("should match, expected %q got %q", employee.Name, employees[1].Name)
 		}
 
 		employee, err = GetEmployeeFromRfid(&db, "01010101")
@@ -114,4 +106,14 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 
 	}
 
+}
+
+func TestConvertOptionsToExportedModels(t *testing.T) {
+	{ // arrays should be same length
+		o := make([]m.Option, 24)
+		cO := ConvertOptionsToExportedModels(o)
+		if len(o) != len(cO) {
+			t.Error("should be same length")
+		}
+	}
 }
