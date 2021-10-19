@@ -164,26 +164,26 @@ func (db *MockMemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) AddAction(action m.Action) error {
-	_, oldAction, err := findAction(db.actions, func(e m.Action) bool {
-		return e.DatabaseId == action.DatabaseId
+func (db *MockMemoryDatabase) AddTask(task m.Task) error {
+	_, oldTask, err := findTask(db.tasks, func(e m.Task) bool {
+		return e.DatabaseId == task.DatabaseId
 	})
 
-	if err == nil && oldAction.DatabaseId == action.DatabaseId {
-		return fmt.Errorf("action with database id '%s' already exists", oldAction.DatabaseId)
+	if err == nil && oldTask.DatabaseId == task.DatabaseId {
+		return fmt.Errorf("task with database id '%s' already exists", oldTask.DatabaseId)
 	}
 
-	db.actions = append(db.actions, action)
+	db.tasks = append(db.tasks, task)
 	return nil
 }
 
-func (db *MockMemoryDatabase) GetAllActions() ([]m.Action, error) {
-	return db.actions, nil
+func (db *MockMemoryDatabase) GetAllTask() ([]m.Task, error) {
+	return db.tasks, nil
 }
 
-func (db *MockMemoryDatabase) DeleteActionWithDatabaseId(id string, action m.Action) error {
-	i, _, err := findAction(db.actions, func(e m.Action) bool {
-		return e.DatabaseId == action.DatabaseId
+func (db *MockMemoryDatabase) DeleteTaskWithDatabaseId(id string, task m.Task) error {
+	i, _, err := findTask(db.tasks, func(e m.Task) bool {
+		return e.DatabaseId == task.DatabaseId
 	})
 
 	if err == nil {
@@ -192,5 +192,5 @@ func (db *MockMemoryDatabase) DeleteActionWithDatabaseId(id string, action m.Act
 		return nil
 	}
 
-	return fmt.Errorf("could not find Action with database id '%s'", id)
+	return fmt.Errorf("could not find Task with database id '%s'", id)
 }

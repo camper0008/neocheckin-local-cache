@@ -9,7 +9,7 @@ import (
 type MemoryDatabase struct {
 	employees []m.Employee
 	options   []m.Option
-	actions   []m.Action
+	tasks     []m.Task
 }
 
 func findEmployee(a []m.Employee, f func(m.Employee) bool) (int, *m.Employee, error) {
@@ -30,13 +30,13 @@ func findOption(a []m.Option, f func(m.Option) bool) (int, *m.Option, error) {
 	return -1, nil, fmt.Errorf("option not found")
 }
 
-func findAction(a []m.Action, f func(m.Action) bool) (int, *m.Action, error) {
+func findTask(a []m.Task, f func(m.Task) bool) (int, *m.Task, error) {
 	for i, v := range a {
 		if f(v) {
 			return i, &v, nil
 		}
 	}
-	return -1, nil, fmt.Errorf("action not found")
+	return -1, nil, fmt.Errorf("task not found")
 }
 
 func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
@@ -189,26 +189,26 @@ func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) AddAction(action m.Action) error {
-	_, oldAction, err := findAction(db.actions, func(e m.Action) bool {
-		return e.DatabaseId == action.DatabaseId
+func (db *MemoryDatabase) AddTask(task m.Task) error {
+	_, oldTask, err := findTask(db.tasks, func(e m.Task) bool {
+		return e.DatabaseId == task.DatabaseId
 	})
 
-	if err == nil && oldAction.DatabaseId == action.DatabaseId {
-		return fmt.Errorf("action with database id '%s' already exists", oldAction.DatabaseId)
+	if err == nil && oldTask.DatabaseId == task.DatabaseId {
+		return fmt.Errorf("task with database id '%s' already exists", oldTask.DatabaseId)
 	}
 
-	db.actions = append(db.actions, action)
+	db.tasks = append(db.tasks, task)
 	return nil
 }
 
-func (db *MemoryDatabase) GetAllActions() ([]m.Action, error) {
-	return db.actions, nil
+func (db *MemoryDatabase) GetAllTasks() ([]m.Task, error) {
+	return db.tasks, nil
 }
 
-func (db *MemoryDatabase) DeleteActionWithDatabaseId(id string, action m.Action) error {
-	i, _, err := findAction(db.actions, func(e m.Action) bool {
-		return e.DatabaseId == action.DatabaseId
+func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string, task m.Task) error {
+	i, _, err := findTask(db.tasks, func(e m.Task) bool {
+		return e.DatabaseId == task.DatabaseId
 	})
 
 	if err == nil {
@@ -217,5 +217,5 @@ func (db *MemoryDatabase) DeleteActionWithDatabaseId(id string, action m.Action)
 		return nil
 	}
 
-	return fmt.Errorf("could not find Action with database id '%s'", id)
+	return fmt.Errorf("could not find Task with database id '%s'", id)
 }

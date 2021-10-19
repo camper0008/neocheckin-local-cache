@@ -21,7 +21,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	empl, err := db.GetEmployeeWithRfid(parsed.EmployeeRfid)
 
 	if err == nil {
-		err := db.AddAction(models.Action{
+		err := db.AddTask(models.Task{
 			Timestamp: time.Now(),
 			Option:    parsed.Option,
 			Rfid:      empl.Rfid,

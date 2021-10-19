@@ -19,7 +19,7 @@ type AbstractDatabase interface {
 	UpdateOptionWithDatabaseId(string, m.Option) error
 	DeleteOptionWithDatabaseId(string) error
 
-	AddAction(m.Action) error
-	GetAllActions() ([]m.Action, error)
-	DeleteActionWithDatabaseId(string, m.Action) error
+	AddTask(m.Task) error
+	GetAllTasks() ([]m.Task, error)
+	DeleteTaskWithDatabaseId(string, m.Task) error
 }
