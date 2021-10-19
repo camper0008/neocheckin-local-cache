@@ -169,7 +169,7 @@ func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) 
 	if err == nil {
 		opt.Name = props.Name
 		opt.WrapperId = props.WrapperId
-		opt.Available = props.Available
+		opt.Schedule = props.Schedule
 	}
 
 	return fmt.Errorf("could not find Option with database id '%s'", id)
