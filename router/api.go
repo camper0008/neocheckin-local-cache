@@ -25,6 +25,11 @@ func ConnectAPI(db database.AbstractDatabase) Router {
 		Method:  "GET",
 		Handler: api.GetEmployeeFromRfidEndpoint,
 	})
+	router.Register(Endpoint{
+		Path:    "/options",
+		Method:  "GET",
+		Handler: api.GetOptionsEndpoint,
+	})
 
 	return router
 }
