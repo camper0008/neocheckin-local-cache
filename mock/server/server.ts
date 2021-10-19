@@ -44,7 +44,7 @@ interface TaskType {
     },
 }
 
-const db: TaskType[] = [
+const tasks: TaskType[] = [
     {
         id: 0,
         name: "name0",
@@ -117,12 +117,12 @@ const server = () => {
 
     app.get('/api/tasks/types', (req, res) => {
         return res.status(200).json({
-            data: db, 
+            data: tasks, 
         });
     });
     
     app.post('/api/tasks/types', (req, res) => {
-        const {taskId, name, employeeId, highLevelApiKey, systemIdentifier} = req.body;
+        const {taskId, name, employeeId, highLevelApiKey, systemIdentifier}: addTaskRequest = req.body;
         if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier))
         return res.status(200).json();
     });
