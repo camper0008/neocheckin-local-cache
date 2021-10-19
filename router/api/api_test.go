@@ -31,7 +31,7 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 			Flex:       3600,
 			Working:    true,
 			Department: "Programmør",
-			Photo:      "base64:iguess",
+			Photo:      "base64:soelberg",
 		}
 
 		db.InsertEmployee(mockEmployee)
@@ -62,7 +62,7 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Flex:       -3600,
 				Working:    false,
 				Department: "It-support",
-				Photo:      "base64:iguess",
+				Photo:      "base64:helledie",
 			},
 			{
 				Rfid:       "12345678",
@@ -70,15 +70,15 @@ func TestGetEmployeeFromRfid(t *testing.T) {
 				Flex:       3600,
 				Working:    true,
 				Department: "Programmør",
-				Photo:      "base64:iguess",
+				Photo:      "base64:soelberg",
 			},
 			{
 				Rfid:       "12345678",
-				Name:       "Praktikplads Taber",
-				Flex:       6969,
+				Name:       "Soelberg Ole",
+				Flex:       0,
 				Working:    true,
 				Department: "Programmør",
-				Photo:      "base64:iguess",
+				Photo:      "base64:ole",
 			},
 		}
 
