@@ -21,6 +21,7 @@ interface TaskType {
     name: string,
     description: string,
     active: boolean,
+    priority: boolean,
     schedule: {
         from: {
             hour: number,
@@ -50,6 +51,7 @@ const tasks: TaskType[] = [
         name: "name0",
         description: "desc0",
         active: true,
+        priority: true,
         schedule: {
             from: {
                 hour: 0,
@@ -75,6 +77,7 @@ const tasks: TaskType[] = [
     {
         id: 1,
         name: "name1",
+        priority: false,
         description: "desc1",
         active: true,
         schedule: {
