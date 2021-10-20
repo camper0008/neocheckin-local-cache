@@ -4,8 +4,9 @@ type TaskType struct {
 	Id          int      `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
-	Active      bool     `json:"active"`
+	Priority    bool     `json:"priority"`
 	Schedule    Schedule `json:"schedule"`
+	BlankField  bool     `json:"active"` // "Active", though unuseed for our program
 }
 
 type ScheduleTime struct {
