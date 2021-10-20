@@ -23,9 +23,9 @@ type ScheduleDays struct {
 	Sunday    bool `json:"sunday"`
 }
 type Schedule struct {
-	From ScheduleTime
-	To   ScheduleTime
-	Days ScheduleDays
+	From ScheduleTime `json:"from"`
+	To   ScheduleTime `json:"to"`
+	Days ScheduleDays `json:"days"`
 }
 
 type GetTaskTypes struct {
