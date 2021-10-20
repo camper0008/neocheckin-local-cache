@@ -4,6 +4,6 @@ import (
 	em "neocheckin_cache/wrapper/models/exported_models"
 )
 
-func SendTask(em.Task) {
-
+func SendTask(em.Task) error {
+	panic("not implemented")
 }
