@@ -13,23 +13,23 @@ import (
 )
 
 func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.CardScanned) error {
-	missing := ""
+	missing := []string{}
 	if p.ApiKey == "" {
-		missing += " apiKey"
+		missing = append(missing, "apiKey")
 	}
 	if p.EmployeeRfid == "" {
-		missing += " employeeRfid"
+		missing = append(missing, "employeeRfid")
 	}
 	if p.SystemId == "" {
-		missing += " systemId"
+		missing = append(missing, "systemId")
 	}
 	if p.Timestamp == "" {
-		missing += " timestamp"
+		missing = append(missing, "timestamp")
 	}
-	if missing == "" {
+	if len(missing) == 0 {
 		return nil
 	} else {
-		return fmt.Errorf("missing fields:%s", missing)
+		return fmt.Errorf("missing fields: %v", missing)
 	}
 }
 
