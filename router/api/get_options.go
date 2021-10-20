@@ -35,23 +35,24 @@ func GetOptionsEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractD
 }
 
 func optionIsDuringWeekday(d dbm.ScheduleDays, w time.Weekday) bool {
-	// could not find an easier way to do this sadly.
-	if w == time.Monday && d.Monday {
-		return true
-	} else if w == time.Tuesday && d.Tuesday {
-		return true
-	} else if w == time.Wednesday && d.Wednesday {
-		return true
-	} else if w == time.Thursday && d.Thursday {
-		return true
-	} else if w == time.Friday && d.Friday {
-		return true
-	} else if w == time.Saturday && d.Saturday {
-		return true
-	} else if w == time.Sunday && d.Sunday {
-		return true
+	switch w {
+	case time.Monday:
+		return d.Monday
+	case time.Tuesday:
+		return d.Tuesday
+	case time.Wednesday:
+		return d.Wednesday
+	case time.Thursday:
+		return d.Thursday
+	case time.Friday:
+		return d.Friday
+	case time.Saturday:
+		return d.Saturday
+	case time.Sunday:
+		return d.Sunday
+	default:
+		return false
 	}
-	return false
 }
 
 func scheduleTimeToSeconds(s dbm.ScheduleTime) int {
