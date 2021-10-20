@@ -77,11 +77,12 @@ func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
 	r := make([]em.Option, len(d))
 	for i := 0; i < len(d); i++ {
 		a := OptionIsAvailable(d[i])
-		oa := em.OptionAvailable(em.INVALID)
-		if a {
+
+		oa := em.OptionAvailable(em.NOT_AVAILABLE)
+		if a && d[i].Priority {
+			oa = em.OptionAvailable(em.PRIORITY)
+		} else if a {
 			oa = em.OptionAvailable(em.AVAILABLE)
-		} else {
-			oa = em.OptionAvailable(em.NOT_AVAILABLE)
 		}
 
 		r[i] = em.Option{
