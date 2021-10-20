@@ -11,12 +11,12 @@ import (
 func main() {
 	db := database.MemoryDatabase{}
 	db.InsertEmployee(m.Employee{
-		Rfid:       "rfid",
-		Name:       "rfid",
-		Flex:       50,
+		Rfid:       "0",
+		Name:       "employee man from employee land",
+		Flex:       5000,
 		Working:    true,
-		Department: "rfid",
-		Photo:      "rfid",
+		Department: "employee department",
+		Photo:      "",
 	})
 	db.InsertOption(m.Option{
 		WrapperId: 0,
@@ -73,7 +73,7 @@ func main() {
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		router.Handle(rw, *r, &db)
 	})
-	err := http.ListenAndServe(":6000", nil)
+	err := http.ListenAndServe(":5000", nil)
 	if err != nil {
 		fmt.Println(err)
 	}
