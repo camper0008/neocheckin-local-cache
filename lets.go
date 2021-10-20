@@ -43,6 +43,32 @@ func main() {
 			},
 		},
 	})
+	db.InsertOption(m.Option{
+		WrapperId: 1,
+		Name:      "priority",
+		Priority:  true,
+		Schedule: m.Schedule{
+			From: m.ScheduleTime{
+				Second: 0,
+				Minute: 0,
+				Hour:   0,
+			},
+			To: m.ScheduleTime{
+				Second: 59,
+				Minute: 59,
+				Hour:   23,
+			},
+			Days: m.ScheduleDays{
+				Monday:    true,
+				Tuesday:   true,
+				Wednesday: true,
+				Thursday:  true,
+				Friday:    true,
+				Saturday:  true,
+				Sunday:    true,
+			},
+		},
+	})
 	router := router.ConnectAPI(&db)
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		router.Handle(rw, *r, &db)
