@@ -7,28 +7,26 @@ import (
 	em "neocheckin_cache/router/api/models/exported_models"
 	"neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
-	"neocheckin_cache/shared"
 	"neocheckin_cache/utils"
 	"net/http"
 	"time"
 )
 
-func PostEmployeeCardscan(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
-	parsed := request_models.CardScanned{}
+	var parsed request_models.CardScanned
 	utils.ParseBody(rq, &parsed)
 
 	empl, err := db.GetEmployeeWithRfid(parsed.EmployeeRfid)
 
 	if err == nil {
-		err := db.AddAction(models.Action{
+		err := db.AddTask(models.Task{
+			//TaskId    int //TODO: Add this
+			Name:      "Scan Card",
 			Timestamp: time.Now(),
-			Option:    shared.WrapperEnum(2),
+			Option:    parsed.Option,
 			Rfid:      empl.Rfid,
-			DatabaseModel: models.DatabaseModel{
-				DatabaseId: utils.GenerateUUID(),
-			},
 		})
 
 		if err != nil {

@@ -6,40 +6,13 @@ import (
 	"neocheckin_cache/utils"
 )
 
-type MemoryDatabase struct {
-	employees []m.Employee
-	options   []m.Option
-	tasks     []m.Task
+type MockMemoryDatabase struct {
+	MemoryDatabase
+	GetEmployeeWithRfidCallAmount int
 }
 
-func findEmployee(a []m.Employee, f func(m.Employee) bool) (int, *m.Employee, error) {
-	for i, v := range a {
-		if f(v) {
-			return i, &v, nil
-		}
-	}
-	return -1, nil, fmt.Errorf("employee not found")
-}
-
-func findOption(a []m.Option, f func(m.Option) bool) (int, *m.Option, error) {
-	for i, v := range a {
-		if f(v) {
-			return i, &v, nil
-		}
-	}
-	return -1, nil, fmt.Errorf("option not found")
-}
-
-func findTask(a []m.Task, f func(m.Task) bool) (int, *m.Task, error) {
-	for i, v := range a {
-		if f(v) {
-			return i, &v, nil
-		}
-	}
-	return -1, nil, fmt.Errorf("task not found")
-}
-
-func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
+func (db *MockMemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
+	db.GetEmployeeWithRfidCallAmount++
 	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.Rfid == rfid
 	})
@@ -51,7 +24,8 @@ func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
 	return m.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
 }
 
-func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (m.Employee, error) {
+func (db *MockMemoryDatabase) GetEmployeeWithDatabaseId(id string) (m.Employee, error) {
+
 	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
@@ -63,14 +37,15 @@ func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (m.Employee, erro
 	return m.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
+func (db *MockMemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 	return db.employees, nil
 }
 
-func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
+func (db *MockMemoryDatabase) InsertEmployee(empl m.Employee) error {
 	if empl.DatabaseId == "" {
 		empl.DatabaseId = utils.GenerateUUID()
 	}
+
 	_, oldEmpl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == empl.DatabaseId
 	})
@@ -83,7 +58,7 @@ func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
 	return nil
 }
 
-func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employee) error {
+func (db *MockMemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employee) error {
 	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
@@ -102,7 +77,7 @@ func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employ
 	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
+func (db *MockMemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
 	i, _, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
@@ -116,7 +91,7 @@ func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Employee with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) GetOptionWithWrapperId(id int) (m.Option, error) {
+func (db *MockMemoryDatabase) GetOptionWithWrapperId(id int) (m.Option, error) {
 	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.WrapperId == id
 	})
@@ -128,7 +103,7 @@ func (db *MemoryDatabase) GetOptionWithWrapperId(id int) (m.Option, error) {
 	return m.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
 }
 
-func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, error) {
+func (db *MockMemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, error) {
 	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
@@ -140,11 +115,11 @@ func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, error) {
 	return m.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) GetAllOptions() ([]m.Option, error) {
+func (db *MockMemoryDatabase) GetAllOptions() ([]m.Option, error) {
 	return db.options, nil
 }
 
-func (db *MemoryDatabase) InsertOption(opt m.Option) error {
+func (db *MockMemoryDatabase) InsertOption(opt m.Option) error {
 	if opt.DatabaseId == "" {
 		opt.DatabaseId = utils.GenerateUUID()
 	}
@@ -161,7 +136,7 @@ func (db *MemoryDatabase) InsertOption(opt m.Option) error {
 	return nil
 }
 
-func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) error {
+func (db *MockMemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) error {
 	_, opt, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
@@ -175,7 +150,7 @@ func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) 
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
+func (db *MockMemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	i, _, err := findOption(db.options, func(e m.Option) bool {
 		return e.DatabaseId == id
 	})
@@ -189,7 +164,7 @@ func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) AddTask(task m.Task) error {
+func (db *MockMemoryDatabase) AddTask(task m.Task) error {
 	_, oldTask, err := findTask(db.tasks, func(e m.Task) bool {
 		return e.DatabaseId == task.DatabaseId
 	})
@@ -202,11 +177,11 @@ func (db *MemoryDatabase) AddTask(task m.Task) error {
 	return nil
 }
 
-func (db *MemoryDatabase) GetAllTasks() ([]m.Task, error) {
+func (db *MockMemoryDatabase) GetAllTask() ([]m.Task, error) {
 	return db.tasks, nil
 }
 
-func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string, task m.Task) error {
+func (db *MockMemoryDatabase) DeleteTaskWithDatabaseId(id string, task m.Task) error {
 	i, _, err := findTask(db.tasks, func(e m.Task) bool {
 		return e.DatabaseId == task.DatabaseId
 	})
