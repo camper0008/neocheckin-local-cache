@@ -10,8 +10,8 @@ import (
 
 func ParseBody(rq http.Request, m interface{}) error {
 	headerContentType := rq.Header.Get("Content-Type")
-	r := regexp.MustCompile("")
-	if r.FindString("application/json") == "" {
+	r := regexp.MustCompile("application/json")
+	if r.FindString(headerContentType) == "" {
 		return fmt.Errorf("invalid content type, got '%s', expected 'application/json'", headerContentType)
 	}
 	var unmarshalErr *json.UnmarshalTypeError
