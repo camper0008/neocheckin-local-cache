@@ -5,16 +5,18 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"regexp"
 )
 
-func ParseBody(r http.Request, m interface{}) error {
-	headerContentType := r.Header.Get("Content-Type")
-	if headerContentType != "application/json" {
+func ParseBody(rq http.Request, m interface{}) error {
+	headerContentType := rq.Header.Get("Content-Type")
+	r := regexp.MustCompile("")
+	if r.FindString("application/json") == "" {
 		return fmt.Errorf("invalid content type, got '%s', expected 'application/json'", headerContentType)
 	}
 	var unmarshalErr *json.UnmarshalTypeError
 
-	decoder := json.NewDecoder(r.Body)
+	decoder := json.NewDecoder(rq.Body)
 	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&m)
 	if err != nil {
