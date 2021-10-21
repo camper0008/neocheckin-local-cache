@@ -6,7 +6,7 @@ import cors from "cors";
 import { readFile } from "fs/promises"
 import { join } from "path";
 
-const exists = (...args) => {
+const exists = (...args: any[]) => {
     for (let i in args) {
         if (args[i] === undefined || args[i] === null) {
             return false
@@ -20,8 +20,8 @@ interface TaskType {
     id: number,
     name: string,
     description: string,
-    active: boolean,
     priority: boolean,
+    active: boolean,
     schedule: {
         from: {
             hour: number,
@@ -48,7 +48,7 @@ interface TaskType {
 const tasks: TaskType[] = [
     {
         id: 0,
-        name: "name0",
+        name: "priority",
         description: "desc0",
         active: true,
         priority: true,
@@ -76,7 +76,7 @@ const tasks: TaskType[] = [
     },
     {
         id: 1,
-        name: "name1",
+        name: "notpriority",
         priority: false,
         description: "desc1",
         active: true,
@@ -129,7 +129,7 @@ const server = () => {
         if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier)) {
 
         } else {
-            return res.status(400).json({error: "missing values"})
+            return res.status(400).json({error: "missing fields"})
         }
 
         return res.status(200).json();
