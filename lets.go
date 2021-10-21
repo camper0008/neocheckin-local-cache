@@ -9,8 +9,9 @@ import (
 )
 
 func main() {
+	// TODO: get data from wrapper/wrapper mock
+	// TODO: add config file for wrapper URL
 	db := database.MemoryDatabase{}
-	// TODO: test overflow capability on frontend
 	db.InsertEmployee(m.Employee{
 		Rfid:       "0",
 		Name:       "employee man from employee land",
