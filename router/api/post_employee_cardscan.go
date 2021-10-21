@@ -37,7 +37,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	rw.Header().Add("Content-Type", "application/json")
 
 	var p rqm.CardScanned
-	err := utils.ParseBody(rq, &p)
+	err := utils.ParseBody(utils.ParseableBody{Body: rq.Body, Header: rq.Header}, &p)
 
 	if err != nil {
 		utils.WriteError(rw, err)
@@ -52,17 +52,21 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	empl, err := db.GetEmployeeWithRfid(p.EmployeeRfid)
 
 	if err == nil {
-		err := wr.SendTask(wem.Task{
-			TaskId:    p.Option,
-			Name:      "Scan card",
-			Rfid:      p.EmployeeRfid,
-			PostKey:   p.ApiKey,
-			SystemId:  p.SystemId,
-			Timestamp: p.Timestamp,
+		statusCode, err := wr.SendTask(wem.Task{
+			TaskId:       p.Option,
+			Name:         "Scan Card",
+			EmployeeRfid: p.EmployeeRfid,
+			PostKey:      p.ApiKey,
+			SystemId:     p.SystemId,
+			Timestamp:    p.Timestamp,
 		})
 
 		if err != nil {
-			utils.WriteServerError(rw, err)
+			if statusCode == http.StatusBadRequest {
+				utils.WriteError(rw, err)
+			} else if statusCode == http.StatusInternalServerError {
+				utils.WriteServerError(rw, err)
+			}
 			return
 		}
 
