@@ -3,6 +3,8 @@ package wrapper
 import (
 	"bytes"
 	"fmt"
+	db "neocheckin_cache/database"
+	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
 	em "neocheckin_cache/wrapper/models/exported_models"
 	rqm "neocheckin_cache/wrapper/models/request_models"
@@ -21,7 +23,25 @@ func convertTaskToRequest(t em.Task) rqm.AddTask {
 	}
 }
 
-func SendTask(t em.Task) (int, error) {
+func sendQueuedTasks(db db.AbstractDatabase, pk string) {
+	t, err := db.GetAllTasks()
+	if err != nil {
+		// TODO: add to task logs?
+		return
+	}
+	for i := 0; i < len(t); i++ {
+		SendTask(em.Task{
+			TaskId:       t[i].TaskId,
+			Name:         t[i].Name,
+			EmployeeRfid: t[i].EmployeeRfid,
+			PostKey:      pk,
+			SystemId:     t[i].SystemId,
+			Timestamp:    t[i].Timestamp,
+		}, db, true)
+	}
+}
+
+func SendTask(t em.Task, db db.AbstractDatabase, queued bool) (int, error) {
 
 	enc, err := utils.JsonEncode(convertTaskToRequest(t))
 	if err != nil {
@@ -31,33 +51,45 @@ func SendTask(t em.Task) (int, error) {
 
 	resp, err := http.Post("http://localhost:7000", "application/json", bytes.NewBuffer(enc))
 	if err != nil {
-		if resp.StatusCode == http.StatusInternalServerError {
-			// TODO: add to task queue
+		if resp.StatusCode == http.StatusInternalServerError && !queued {
+			// TODO: add db errors to logs
+			db.AddTask(dbm.Task{
+				TaskId:       t.TaskId,
+				Name:         t.Name,
+				EmployeeRfid: t.EmployeeRfid,
+				SystemId:     t.SystemId,
+				Timestamp:    t.Timestamp,
+			})
 			return resp.StatusCode, err
 		}
 		// TODO: add to task logs
 		return resp.StatusCode, err
 	}
 
-	status, err := handleSendTaskResponse(*resp)
-	return status, err
-}
+	defer resp.Body.Close()
 
-func handleSendTaskResponse(r http.Response) (int, error) {
-	defer r.Body.Close()
-
-	if r.StatusCode == http.StatusBadRequest || r.StatusCode == http.StatusInternalServerError {
-		if r.StatusCode == http.StatusInternalServerError {
-			// TODO: add to task queue
-			fmt.Println(":-(")
+	if resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusInternalServerError {
+		if resp.StatusCode == http.StatusInternalServerError && !queued {
+			// TODO: add db errors to logs
+			db.AddTask(dbm.Task{
+				TaskId:       t.TaskId,
+				Name:         t.Name,
+				EmployeeRfid: t.EmployeeRfid,
+				SystemId:     t.SystemId,
+				Timestamp:    t.Timestamp,
+			})
 		}
 		rErr := rsm.Error{}
-		pErr := utils.ParseBody(utils.ParseableBody{Body: r.Body, Header: r.Header}, rErr)
+		pErr := utils.ParseBody(utils.ParseableBody{Body: resp.Body, Header: resp.Header}, rErr)
 		if pErr != nil {
 			return http.StatusInternalServerError, pErr
 		}
-		return r.StatusCode, fmt.Errorf(rErr.Error)
 		// TODO: add to task logs
+		return resp.StatusCode, fmt.Errorf(rErr.Error)
+	}
+
+	if resp.StatusCode == http.StatusOK && err == nil && !queued {
+		sendQueuedTasks(db, t.PostKey)
 	}
 
 	return http.StatusOK, nil
