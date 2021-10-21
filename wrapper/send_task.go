@@ -29,7 +29,7 @@ func SendTask(t em.Task) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	resp, err := http.Post("http://localhost:4000", "application/json", bytes.NewBuffer(enc))
+	resp, err := http.Post("http://localhost:7000", "application/json", bytes.NewBuffer(enc))
 	if err != nil {
 		if resp.StatusCode == http.StatusInternalServerError {
 			// TODO: add to task queue
