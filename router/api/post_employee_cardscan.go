@@ -59,7 +59,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 			PostKey:      p.ApiKey,
 			SystemId:     p.SystemId,
 			Timestamp:    p.Timestamp,
-		})
+		}, db, false)
 
 		if err != nil {
 			if statusCode == http.StatusBadRequest {
