@@ -23,7 +23,7 @@ func TestBodyParser(t *testing.T) {
 			Body: io.NopCloser(strings.NewReader("Hello, world!")),
 		}
 		b := exampleRequest{}
-		err := utils.ParseBody(r, b)
+		err := utils.ParseBody(utils.ParseableBody{Body: r.Body, Header: r.Header}, &b)
 
 		if !(err != nil && strings.Contains(err.Error(), "invalid character 'H'")) {
 			t.Error("Should return JSON error")
@@ -37,7 +37,7 @@ func TestBodyParser(t *testing.T) {
 			Body: io.NopCloser(strings.NewReader("{ name: \"Soelberg\", age: 50 }")),
 		}
 		b := exampleRequest{}
-		err := utils.ParseBody(r, &b)
+		err := utils.ParseBody(utils.ParseableBody{Body: r.Body, Header: r.Header}, &b)
 
 		if !(err != nil && strings.Contains(err.Error(), "invalid content type")) {
 			t.Error("Should deny because of invalid header")
@@ -51,7 +51,7 @@ func TestBodyParser(t *testing.T) {
 			Body: io.NopCloser(strings.NewReader("{ \"name\": \"Soelberg\", \"age\": 50}")),
 		}
 		b := exampleRequest{}
-		err := utils.ParseBody(r, &b)
+		err := utils.ParseBody(utils.ParseableBody{Body: r.Body, Header: r.Header}, &b)
 
 		if err != nil {
 			t.Errorf("Should parse correctly, got %q", err.Error())
@@ -71,7 +71,7 @@ func TestBodyParser(t *testing.T) {
 			Body: io.NopCloser(strings.NewReader("{ \"name\": \"Soelberg\", \"age\": 50, \"unexposed\": \"none\"}")),
 		}
 		b := exampleRequest{}
-		err := utils.ParseBody(r, &b)
+		err := utils.ParseBody(utils.ParseableBody{Body: r.Body, Header: r.Header}, &b)
 
 		if err == nil {
 			t.Error("Should error")
