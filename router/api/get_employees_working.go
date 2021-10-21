@@ -49,7 +49,7 @@ func GetEmployeesWorking(db db.AbstractDatabase) (rsm.WorkingEmployees, error) {
 		if o[e[i].Department] == nil {
 			o[e[i].Department] = []em.Employee{}
 		}
-		o[e[i].Department] = append(o[e[i].Department], em.Employee{})
+		o[e[i].Department] = append(o[e[i].Department], e[i])
 	}
 
 	return rsm.WorkingEmployees{
