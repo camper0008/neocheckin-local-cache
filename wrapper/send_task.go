@@ -95,5 +95,5 @@ func SendTask(t em.Task, db db.AbstractDatabase, queued bool) (int, error) {
 		sendQueuedTasks(db, t.PostKey)
 	}
 
-	return resp.StatusCode, nil
+	return http.StatusOK, nil
 }
