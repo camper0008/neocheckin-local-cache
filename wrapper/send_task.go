@@ -56,6 +56,7 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
+	// TODO: use config url
 	resp, err := http.Post("http://localhost:7000", "application/json", bytes.NewBuffer(enc))
 	if err != nil {
 		db.AddTask(dbm.Task{
