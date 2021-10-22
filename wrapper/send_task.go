@@ -26,11 +26,11 @@ func convertTaskToRequest(t em.Task) rqm.AddTask {
 func sendQueuedTasks(db db.AbstractDatabase, pk string) {
 	t, err := db.GetAllTasks()
 	if err != nil {
-		// TODO: add to task logs?
+		// TODO: add to task logs
 		return
 	}
 	for i := 0; i < len(t); i++ {
-		SendTask(em.Task{
+		status, err := SendTask(em.Task{
 			TaskId:       t[i].TaskId,
 			Name:         t[i].Name,
 			EmployeeRfid: t[i].EmployeeRfid,
@@ -38,6 +38,13 @@ func sendQueuedTasks(db db.AbstractDatabase, pk string) {
 			SystemId:     t[i].SystemId,
 			Timestamp:    t[i].Timestamp,
 		}, db, true)
+		if status == http.StatusOK && err == nil {
+			err := db.DeleteTaskWithDatabaseId(t[i].DatabaseId)
+			if err != nil {
+				//TODO: add to task logs
+				continue
+			}
+		}
 	}
 }
 
@@ -51,19 +58,15 @@ func SendTask(t em.Task, db db.AbstractDatabase, queued bool) (int, error) {
 
 	resp, err := http.Post("http://localhost:7000", "application/json", bytes.NewBuffer(enc))
 	if err != nil {
-		if resp.StatusCode == http.StatusInternalServerError && !queued {
-			// TODO: add db errors to logs
-			db.AddTask(dbm.Task{
-				TaskId:       t.TaskId,
-				Name:         t.Name,
-				EmployeeRfid: t.EmployeeRfid,
-				SystemId:     t.SystemId,
-				Timestamp:    t.Timestamp,
-			})
-			return resp.StatusCode, err
-		}
+		db.AddTask(dbm.Task{
+			TaskId:       t.TaskId,
+			Name:         t.Name,
+			EmployeeRfid: t.EmployeeRfid,
+			SystemId:     t.SystemId,
+			Timestamp:    t.Timestamp,
+		})
 		// TODO: add to task logs
-		return resp.StatusCode, err
+		return http.StatusInternalServerError, err
 	}
 
 	defer resp.Body.Close()
@@ -92,5 +95,5 @@ func SendTask(t em.Task, db db.AbstractDatabase, queued bool) (int, error) {
 		sendQueuedTasks(db, t.PostKey)
 	}
 
-	return http.StatusOK, nil
+	return resp.StatusCode, nil
 }
