@@ -41,6 +41,11 @@ func (db *MockMemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 	return db.employees, nil
 }
 
+func (db *MockMemoryDatabase) ReplaceEmployees(e []m.Employee) error {
+	db.employees = e
+	return nil
+}
+
 func (db *MockMemoryDatabase) InsertEmployee(empl m.Employee) error {
 	if empl.DatabaseId == "" {
 		empl.DatabaseId = utils.GenerateUUID()
@@ -117,6 +122,11 @@ func (db *MockMemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, erro
 
 func (db *MockMemoryDatabase) GetAllOptions() ([]m.Option, error) {
 	return db.options, nil
+}
+
+func (db *MockMemoryDatabase) ReplaceOptions(o []m.Option) error {
+	db.options = o
+	return nil
 }
 
 func (db *MockMemoryDatabase) InsertOption(opt m.Option) error {
