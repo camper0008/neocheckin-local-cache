@@ -206,9 +206,9 @@ func (db *MemoryDatabase) GetAllTasks() ([]m.Task, error) {
 	return db.tasks, nil
 }
 
-func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string, task m.Task) error {
+func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string) error {
 	i, _, err := findTask(db.tasks, func(e m.Task) bool {
-		return e.DatabaseId == task.DatabaseId
+		return e.DatabaseId == id
 	})
 
 	if err == nil {

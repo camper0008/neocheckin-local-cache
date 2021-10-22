@@ -21,5 +21,5 @@ type AbstractDatabase interface {
 
 	AddTask(m.Task) error
 	GetAllTasks() ([]m.Task, error)
-	DeleteTaskWithDatabaseId(string, m.Task) error
+	DeleteTaskWithDatabaseId(string) error
 }
