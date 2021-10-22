@@ -1,4 +1,4 @@
-package response_models
+package imported_models
 
 type TaskType struct {
 	Id          int      `json:"id"`
@@ -27,8 +27,4 @@ type Schedule struct {
 	From ScheduleTime `json:"from"`
 	To   ScheduleTime `json:"to"`
 	Days ScheduleDays `json:"days"`
-}
-
-type GetTaskTypes struct {
-	Data []TaskType `json:"data"`
 }
