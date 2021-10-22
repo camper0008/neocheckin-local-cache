@@ -15,6 +15,14 @@ const exists = (...args: any[]) => {
     return true
 }
 
+interface Employee {
+    rfid: string,
+    name: string,
+    flex: number,
+    working: boolean,
+    department: string,
+    photo: string,
+}
 
 interface TaskType {
     id: number,
@@ -104,6 +112,33 @@ const tasks: TaskType[] = [
     },
 ];
 
+const employees: Employee[] = [
+    {
+        rfid: "0",
+        name: "employee0",
+        flex: 300,
+        working: true,
+        department: "department0",
+        photo: "",
+    },
+    {
+        rfid: "1",
+        name: "employee1",
+        flex: 300,
+        working: true,
+        department: "department0",
+        photo: "",
+    },
+    {
+        rfid: "2",
+        name: "employee2",
+        flex: 300,
+        working: true,
+        department: "department1",
+        photo: "",
+    }
+]
+
 interface addTaskRequest {
     taskId: number,
     name: string,
@@ -121,6 +156,12 @@ const server = () => {
     app.get('/api/tasks/types', (req, res) => {
         return res.status(200).json({
             data: tasks, 
+        });
+    });
+
+    app.get('/api/employees/all', (req, res) => {
+        return res.status(200).json({
+            data: employees,
         });
     });
     
