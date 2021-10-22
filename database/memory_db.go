@@ -67,6 +67,11 @@ func (db *MemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 	return db.employees, nil
 }
 
+func (db *MemoryDatabase) ReplaceEmployees(e []m.Employee) error {
+	db.employees = e
+	return nil
+}
+
 func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
 	if empl.DatabaseId == "" {
 		empl.DatabaseId = utils.GenerateUUID()
@@ -144,6 +149,11 @@ func (db *MemoryDatabase) GetAllOptions() ([]m.Option, error) {
 	return db.options, nil
 }
 
+func (db *MemoryDatabase) ReplaceOptions(o []m.Option) error {
+	db.options = o
+	return nil
+}
+
 func (db *MemoryDatabase) InsertOption(opt m.Option) error {
 	if opt.DatabaseId == "" {
 		opt.DatabaseId = utils.GenerateUUID()
@@ -206,9 +216,9 @@ func (db *MemoryDatabase) GetAllTasks() ([]m.Task, error) {
 	return db.tasks, nil
 }
 
-func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string, task m.Task) error {
+func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string) error {
 	i, _, err := findTask(db.tasks, func(e m.Task) bool {
-		return e.DatabaseId == task.DatabaseId
+		return e.DatabaseId == id
 	})
 
 	if err == nil {

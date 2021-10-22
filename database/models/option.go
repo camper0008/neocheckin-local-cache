@@ -4,6 +4,7 @@ type Option struct {
 	DatabaseModel
 	WrapperId int
 	Name      string
+	Priority  bool
 	Schedule  Schedule
 }
 

@@ -6,7 +6,7 @@ import cors from "cors";
 import { readFile } from "fs/promises"
 import { join } from "path";
 
-const exists = (...args) => {
+const exists = (...args: any[]) => {
     for (let i in args) {
         if (args[i] === undefined || args[i] === null) {
             return false
@@ -15,11 +15,20 @@ const exists = (...args) => {
     return true
 }
 
+interface Employee {
+    rfid: string,
+    name: string,
+    flex: number,
+    working: boolean,
+    department: string,
+    photo: string,
+}
 
 interface TaskType {
     id: number,
     name: string,
     description: string,
+    priority: boolean,
     active: boolean,
     schedule: {
         from: {
@@ -47,9 +56,10 @@ interface TaskType {
 const tasks: TaskType[] = [
     {
         id: 0,
-        name: "name0",
+        name: "priority",
         description: "desc0",
         active: true,
+        priority: true,
         schedule: {
             from: {
                 hour: 0,
@@ -74,7 +84,8 @@ const tasks: TaskType[] = [
     },
     {
         id: 1,
-        name: "name1",
+        name: "notpriority",
+        priority: false,
         description: "desc1",
         active: true,
         schedule: {
@@ -101,6 +112,33 @@ const tasks: TaskType[] = [
     },
 ];
 
+const employees: Employee[] = [
+    {
+        rfid: "0",
+        name: "employee0",
+        flex: 300,
+        working: true,
+        department: "department0",
+        photo: "",
+    },
+    {
+        rfid: "1",
+        name: "employee1",
+        flex: 300,
+        working: true,
+        department: "department0",
+        photo: "",
+    },
+    {
+        rfid: "2",
+        name: "employee2",
+        flex: 300,
+        working: true,
+        department: "department1",
+        photo: "",
+    }
+]
+
 interface addTaskRequest {
     taskId: number,
     name: string,
@@ -120,13 +158,19 @@ const server = () => {
             data: tasks, 
         });
     });
+
+    app.get('/api/employees/all', (req, res) => {
+        return res.status(200).json({
+            data: employees,
+        });
+    });
     
     app.post('/api/tasks/add', (req, res) => {
         const {taskId, name, employeeId, highLevelApiKey, systemIdentifier}: addTaskRequest = req.body;
         if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier)) {
 
         } else {
-            return res.status(400).json({error: "missing values"})
+            return res.status(400).json({error: "missing fields"})
         }
 
         return res.status(200).json();

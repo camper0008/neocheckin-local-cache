@@ -2,35 +2,71 @@ package api
 
 import (
 	"fmt"
-	db "neocheckin_cache/database"
-	"neocheckin_cache/database/models"
+	dbt "neocheckin_cache/database"
 	em "neocheckin_cache/router/api/models/exported_models"
-	"neocheckin_cache/router/api/models/request_models"
+	rqm "neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
 	"neocheckin_cache/utils"
+	wr "neocheckin_cache/wrapper"
+	wem "neocheckin_cache/wrapper/models/exported_models"
 	"net/http"
-	"time"
 )
 
-func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.CardScanned) error {
+	missing := []string{}
+	if p.ApiKey == "" {
+		missing = append(missing, "apiKey")
+	}
+	if p.EmployeeRfid == "" {
+		missing = append(missing, "employeeRfid")
+	}
+	if p.SystemId == "" {
+		missing = append(missing, "systemId")
+	}
+	if p.Timestamp == "" {
+		missing = append(missing, "timestamp")
+	}
+	if len(missing) == 0 {
+		return nil
+	} else {
+		return fmt.Errorf("missing fields: %v", missing)
+	}
+}
+
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
-	var parsed request_models.CardScanned
-	utils.ParseBody(rq, &parsed)
+	var p rqm.CardScanned
+	err := utils.ParseBody(utils.ParseableBody{Body: rq.Body, Header: rq.Header}, &p)
 
-	empl, err := db.GetEmployeeWithRfid(parsed.EmployeeRfid)
+	if err != nil {
+		utils.WriteError(rw, err)
+		return
+	}
+
+	if err := validatePostEmployeeCardscanEndpointInput(rw, p); err != nil {
+		utils.WriteError(rw, err)
+		return
+	}
+
+	empl, err := db.GetEmployeeWithRfid(p.EmployeeRfid)
 
 	if err == nil {
-		err := db.AddTask(models.Task{
-			//TaskId    int //TODO: Add this
-			Name:      "Scan Card",
-			Timestamp: time.Now(),
-			Option:    parsed.Option,
-			Rfid:      empl.Rfid,
-		})
+		statusCode, err := wr.SendTask(wem.Task{
+			TaskId:       p.Option,
+			Name:         "Scan Card",
+			EmployeeRfid: p.EmployeeRfid,
+			PostKey:      p.ApiKey,
+			SystemId:     p.SystemId,
+			Timestamp:    p.Timestamp,
+		}, db, false)
 
 		if err != nil {
-			utils.WriteServerError(rw, err)
+			if statusCode == http.StatusBadRequest {
+				utils.WriteError(rw, err)
+			} else if statusCode == http.StatusInternalServerError {
+				utils.WriteServerError(rw, err)
+			}
 			return
 		}
 

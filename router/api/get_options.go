@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	db "neocheckin_cache/database"
+	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func GetOptionsEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func GetOptionsEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
 	dbO, err := db.GetAllOptions()
@@ -77,11 +77,12 @@ func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
 	r := make([]em.Option, len(d))
 	for i := 0; i < len(d); i++ {
 		a := OptionIsAvailable(d[i])
-		oa := em.OptionAvailable(em.INVALID)
-		if a {
+
+		oa := em.OptionAvailable(em.NOT_AVAILABLE)
+		if a && d[i].Priority {
+			oa = em.OptionAvailable(em.PRIORITY)
+		} else if a {
 			oa = em.OptionAvailable(em.AVAILABLE)
-		} else {
-			oa = em.OptionAvailable(em.NOT_AVAILABLE)
 		}
 
 		r[i] = em.Option{

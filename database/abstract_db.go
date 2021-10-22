@@ -8,6 +8,7 @@ type AbstractDatabase interface {
 	GetEmployeeWithRfid(string) (m.Employee, error)
 	GetEmployeeWithDatabaseId(string) (m.Employee, error)
 	GetAllEmployees() ([]m.Employee, error)
+	ReplaceEmployees([]m.Employee) error
 	InsertEmployee(m.Employee) error
 	UpdateEmployeeWithDatabaseId(string, m.Employee) error
 	DeleteEmployeeWithDatabaseId(string) error
@@ -15,11 +16,12 @@ type AbstractDatabase interface {
 	GetOptionWithWrapperId(int) (m.Option, error)
 	GetOptionWithDatabaseId(string) (m.Option, error)
 	GetAllOptions() ([]m.Option, error)
+	ReplaceOptions([]m.Option) error
 	InsertOption(m.Option) error
 	UpdateOptionWithDatabaseId(string, m.Option) error
 	DeleteOptionWithDatabaseId(string) error
 
 	AddTask(m.Task) error
 	GetAllTasks() ([]m.Task, error)
-	DeleteTaskWithDatabaseId(string, m.Task) error
+	DeleteTaskWithDatabaseId(string) error
 }

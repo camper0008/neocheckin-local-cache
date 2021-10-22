@@ -1,11 +1,11 @@
 package router
 
 import (
-	"neocheckin_cache/database"
+	dbt "neocheckin_cache/database"
 	api "neocheckin_cache/router/api"
 )
 
-func ConnectAPI(db database.AbstractDatabase) Router {
+func ConnectAPI(db dbt.AbstractDatabase) Router {
 	router := Router{
 		Path: "/api",
 	}

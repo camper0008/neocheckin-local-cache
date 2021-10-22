@@ -1,6 +1,6 @@
-package exported_models
+package request_models
 
-type Task struct {
+type AddTask struct {
 	TaskId       int    `json:"taskId"`
 	Name         string `json:"name"`
 	EmployeeRfid string `json:"employeeRfid"`

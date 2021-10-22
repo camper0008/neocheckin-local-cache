@@ -1,11 +1,12 @@
-package response_models
+package imported_models
 
 type TaskType struct {
 	Id          int      `json:"id"`
 	Name        string   `json:"name"`
 	Description string   `json:"description"`
-	Active      bool     `json:"active"`
+	Priority    bool     `json:"priority"`
 	Schedule    Schedule `json:"schedule"`
+	BlankField  bool     `json:"active"` // "Active", though unuseed for our program
 }
 
 type ScheduleTime struct {
@@ -23,11 +24,7 @@ type ScheduleDays struct {
 	Sunday    bool `json:"sunday"`
 }
 type Schedule struct {
-	From ScheduleTime
-	To   ScheduleTime
-	Days ScheduleDays
-}
-
-type GetTaskTypes struct {
-	Data []TaskType `json:"data"`
+	From ScheduleTime `json:"from"`
+	To   ScheduleTime `json:"to"`
+	Days ScheduleDays `json:"days"`
 }
