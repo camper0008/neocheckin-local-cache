@@ -3,7 +3,7 @@ package wrapper
 import (
 	"bytes"
 	"fmt"
-	db "neocheckin_cache/database"
+	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
 	em "neocheckin_cache/wrapper/models/exported_models"
@@ -23,7 +23,7 @@ func convertTaskToRequest(t em.Task) rqm.AddTask {
 	}
 }
 
-func sendQueuedTasks(db db.AbstractDatabase, pk string) {
+func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
 	t, err := db.GetAllTasks()
 	if err != nil {
 		// TODO: add to task logs
@@ -48,7 +48,7 @@ func sendQueuedTasks(db db.AbstractDatabase, pk string) {
 	}
 }
 
-func SendTask(t em.Task, db db.AbstractDatabase, queued bool) (int, error) {
+func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 
 	enc, err := utils.JsonEncode(convertTaskToRequest(t))
 	if err != nil {

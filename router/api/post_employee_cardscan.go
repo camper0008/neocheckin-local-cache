@@ -2,7 +2,7 @@ package api
 
 import (
 	"fmt"
-	db "neocheckin_cache/database"
+	dbt "neocheckin_cache/database"
 	em "neocheckin_cache/router/api/models/exported_models"
 	rqm "neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
@@ -33,7 +33,7 @@ func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.Car
 	}
 }
 
-func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
 	var p rqm.CardScanned

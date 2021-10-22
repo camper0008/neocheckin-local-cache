@@ -2,14 +2,14 @@ package api
 
 import (
 	"fmt"
-	db "neocheckin_cache/database"
+	dbt "neocheckin_cache/database"
 	em "neocheckin_cache/router/api/models/exported_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
 	"neocheckin_cache/utils"
 	"net/http"
 )
 
-func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db db.AbstractDatabase) {
+func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json")
 
 	w, err := GetEmployeesWorking(db)
@@ -29,7 +29,7 @@ func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db db.
 	}
 }
 
-func GetEmployeesWorking(db db.AbstractDatabase) (rsm.WorkingEmployees, error) {
+func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) {
 	dbE, err := db.GetAllEmployees()
 	if err != nil {
 		return rsm.WorkingEmployees{}, err
