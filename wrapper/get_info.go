@@ -2,6 +2,7 @@
 package wrapper
 
 import (
+	c "neocheckin_cache/config"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
@@ -10,8 +11,8 @@ import (
 )
 
 func GetTaskTypes() (rm.GetTaskTypes, error) {
-	// TODO: use config url
-	resp, err := http.Get("http://localhost:7000/api/tasks/types")
+	conf := c.Read()
+	resp, err := http.Get(conf["API_URL"] + "/tasks/types")
 	if err != nil {
 		return rm.GetTaskTypes{}, err
 	}
@@ -29,8 +30,8 @@ func GetTaskTypes() (rm.GetTaskTypes, error) {
 }
 
 func GetEmployees() (rm.GetEmployees, error) {
-	// TODO: use config url
-	resp, err := http.Get("http://localhost:7000/api/employees/all")
+	conf := c.Read()
+	resp, err := http.Get(conf["API_URL"] + "/employees/all")
 	if err != nil {
 		return rm.GetEmployees{}, err
 	}
