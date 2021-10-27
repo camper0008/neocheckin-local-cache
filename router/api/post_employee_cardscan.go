@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	dbt "neocheckin_cache/database"
+	dbm "neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
 	rqm "neocheckin_cache/router/api/models/request_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
@@ -52,6 +53,23 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	empl, err := db.GetEmployeeWithRfid(p.EmployeeRfid)
 
 	if err == nil {
+		// TODO: fix bandaid, use category instead of hardcoding 0 for v0.2
+
+		if p.Option == 0 {
+			empl.Working = true
+		} else {
+			empl.Working = false
+		}
+
+		db.UpdateEmployeeWithDatabaseId(empl.DatabaseId, dbm.Employee{
+			Rfid:       empl.Rfid,
+			Name:       empl.Name,
+			Flex:       empl.Flex,
+			Working:    empl.Working,
+			Department: empl.Department,
+			Photo:      empl.Photo,
+		})
+
 		statusCode, err := wr.SendTask(wem.Task{
 			TaskId:       p.Option,
 			Name:         "Scan Card",
