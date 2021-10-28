@@ -1,10 +1,8 @@
-// written after docs 19/10-21
+// written after docs 28/10-21
 // https://gitlab.pcvdata.dk/super-team-euxtra/neocheckin/docs
 
 import express from "express";
 import cors from "cors";
-import { readFile } from "fs/promises"
-import { join } from "path";
 
 const exists = (...args: any[]) => {
     for (let i in args) {
@@ -27,9 +25,12 @@ interface Employee {
 interface TaskType {
     id: number,
     name: string,
+    displayName: string,
     description: string,
     priority: boolean,
     active: boolean,
+    exclusiveLocations: string[] | null,
+    category: 'check in' | 'check out',
     schedule: {
         from: {
             hour: number,
@@ -57,6 +58,9 @@ const tasks: TaskType[] = [
     {
         id: 0,
         name: "priority",
+        displayName: "Priority Option",
+        category: "check out",
+        exclusiveLocations: null,
         description: "desc0",
         active: true,
         priority: true,
@@ -85,6 +89,9 @@ const tasks: TaskType[] = [
     {
         id: 1,
         name: "notpriority",
+        displayName: "Not Priority",
+        category: "check out",
+        exclusiveLocations: null,
         priority: false,
         description: "desc1",
         active: true,
@@ -145,6 +152,7 @@ interface addTaskRequest {
     employeeId: string,
     highLevelApiKey: string,
     systemIdentifier: string,
+    timestamp: string,
 }
 
 
@@ -166,8 +174,8 @@ const server = () => {
     });
     
     app.post('/api/tasks/add', (req, res) => {
-        const {taskId, name, employeeId, highLevelApiKey, systemIdentifier}: addTaskRequest = req.body;
-        if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier)) {
+        const {taskId, name, employeeId, highLevelApiKey, systemIdentifier, timestamp}: addTaskRequest = req.body;
+        if (exists(taskId, name, employeeId, highLevelApiKey, systemIdentifier, timestamp)) {
 
         } else {
             return res.status(400).json({error: "missing fields"})
