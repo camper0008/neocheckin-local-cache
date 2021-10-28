@@ -58,7 +58,7 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 	}
 
 	conf := c.Read()
-	resp, err := http.Post(conf["API_URL"], "application/json", bytes.NewBuffer(enc))
+	resp, err := http.Post(conf["API_URL"]+"/tasks/add", "application/json", bytes.NewBuffer(enc))
 	if err != nil {
 		db.AddTask(dbm.Task{
 			TaskId:       t.TaskId,
