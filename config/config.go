@@ -1,5 +1,7 @@
 package config
 
+// TODO: make proper parser
+
 import (
 	"io/ioutil"
 	"log"
