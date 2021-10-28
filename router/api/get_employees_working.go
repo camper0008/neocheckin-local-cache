@@ -35,6 +35,8 @@ func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) 
 		return rsm.WorkingEmployees{}, err
 	}
 
+	// TODO: sort alphabetically
+
 	e := make([]em.Employee, len(dbE))
 	o := make(map[string][]em.Employee)
 

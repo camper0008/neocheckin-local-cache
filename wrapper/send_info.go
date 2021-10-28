@@ -3,6 +3,7 @@ package wrapper
 import (
 	"bytes"
 	"fmt"
+	c "neocheckin_cache/config"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
@@ -56,8 +57,8 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	// TODO: use config url
-	resp, err := http.Post("http://localhost:7000", "application/json", bytes.NewBuffer(enc))
+	conf := c.Read()
+	resp, err := http.Post(conf["API_URL"]+"/tasks/add", "application/json", bytes.NewBuffer(enc))
 	if err != nil {
 		db.AddTask(dbm.Task{
 			TaskId:       t.TaskId,

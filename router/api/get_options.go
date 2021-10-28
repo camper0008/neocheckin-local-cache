@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	c "neocheckin_cache/config"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
@@ -60,6 +61,17 @@ func scheduleTimeToSeconds(s dbm.ScheduleTime) int {
 }
 
 func OptionIsAvailable(o dbm.Option) bool {
+	if len(o.Locations) != 0 {
+		conf := c.Read()
+		loc := conf["LOCATION"]
+		for i := 0; i < len(o.Locations); i++ {
+			if loc == o.Locations[i] {
+				return true
+			}
+		}
+		return false
+	}
+
 	t := time.Now()
 	w := t.Weekday()
 	if optionIsDuringWeekday(o.Schedule.Days, w) {
@@ -86,9 +98,11 @@ func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
 		}
 
 		r[i] = em.Option{
-			Id:        d[i].WrapperId,
-			Name:      d[i].Name,
-			Available: oa,
+			Id:          d[i].WrapperId,
+			Name:        d[i].Name,
+			DisplayName: d[i].DisplayName,
+			Available:   oa,
+			Category:    d[i].Category,
 		}
 	}
 

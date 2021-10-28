@@ -2,10 +2,13 @@ package models
 
 type Option struct {
 	DatabaseModel
-	WrapperId int
-	Name      string
-	Priority  bool
-	Schedule  Schedule
+	WrapperId   int
+	Name        string
+	DisplayName string
+	Locations   []string
+	Category    string
+	Priority    bool
+	Schedule    Schedule
 }
 
 type Schedule struct {
