@@ -53,9 +53,12 @@ func taskTypesResponseToDbModels(r rm.GetTaskTypes) []dbm.Option {
 	res := make([]dbm.Option, len(data))
 	for i := 0; i < len(data); i++ {
 		res[i] = dbm.Option{
-			WrapperId: data[i].Id,
-			Name:      data[i].Name,
-			Priority:  data[i].Priority,
+			WrapperId:   data[i].Id,
+			Name:        data[i].Name,
+			DisplayName: data[i].DisplayName,
+			Priority:    data[i].Priority,
+			Locations:   data[i].Locations,
+			Category:    data[i].Category,
 			Schedule: dbm.Schedule{
 				From: dbm.ScheduleTime{
 					Second: data[i].Schedule.From.Second,
