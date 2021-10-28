@@ -3,10 +3,13 @@ package imported_models
 type TaskType struct {
 	Id          int      `json:"id"`
 	Name        string   `json:"name"`
+	DisplayName string   `json:"displayName"`
 	Description string   `json:"description"`
 	Priority    bool     `json:"priority"`
 	Schedule    Schedule `json:"schedule"`
-	BlankField  bool     `json:"active"` // "Active", though unuseed for our program
+	Locations   []string `json:"exclusiveLocations"`
+	Category    string   `json:"category"`
+	BlankField  bool     `json:"active"` // "Active", though unused for our program
 }
 
 type ScheduleTime struct {
