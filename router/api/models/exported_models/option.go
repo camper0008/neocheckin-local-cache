@@ -10,7 +10,9 @@ const (
 )
 
 type Option struct {
-	Id        int             `json:"id"`
-	Name      string          `json:"name"`
-	Available OptionAvailable `json:"available"`
+	Id          int             `json:"id"`
+	Name        string          `json:"name"`
+	DisplayName string          `json:"displayName"`
+	Category    string          `json:"category"`
+	Available   OptionAvailable `json:"available"`
 }

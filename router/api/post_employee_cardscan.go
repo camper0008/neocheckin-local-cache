@@ -53,11 +53,16 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 	empl, err := db.GetEmployeeWithRfid(p.EmployeeRfid)
 
 	if err == nil {
-		// TODO: fix bandaid, use category instead of hardcoding 0 for v0.2
+		o, err := db.GetOptionWithWrapperId(p.Option)
 
-		if p.Option == 0 {
+		if err != nil {
+			utils.WriteServerError(rw, err)
+			return
+		}
+
+		if o.Category == "check in" {
 			empl.Working = true
-		} else {
+		} else if o.Category == "check out" {
 			empl.Working = false
 		}
 

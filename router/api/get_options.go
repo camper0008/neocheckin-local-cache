@@ -98,9 +98,11 @@ func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
 		}
 
 		r[i] = em.Option{
-			Id:        d[i].WrapperId,
-			Name:      d[i].Name,
-			Available: oa,
+			Id:          d[i].WrapperId,
+			Name:        d[i].Name,
+			DisplayName: d[i].DisplayName,
+			Available:   oa,
+			Category:    d[i].Category,
 		}
 	}
 
