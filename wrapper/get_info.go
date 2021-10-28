@@ -89,6 +89,7 @@ func employeesResponseToDbModels(r rm.GetEmployees) []dbm.Employee {
 	res := make([]dbm.Employee, len(data))
 	for i := 0; i < len(data); i++ {
 		res[i] = dbm.Employee{
+			WrapperId:  data[i].WrapperId,
 			Rfid:       data[i].Rfid,
 			Name:       data[i].Name,
 			Flex:       data[i].Flex,

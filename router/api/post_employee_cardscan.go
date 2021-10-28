@@ -67,6 +67,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 		}
 
 		db.UpdateEmployeeWithDatabaseId(empl.DatabaseId, dbm.Employee{
+			WrapperId:  empl.WrapperId,
 			Rfid:       empl.Rfid,
 			Name:       empl.Name,
 			Flex:       empl.Flex,
@@ -77,7 +78,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 
 		statusCode, err := wr.SendTask(wem.Task{
 			TaskId:       p.Option,
-			Name:         "Scan Card",
+			Name:         "Scan Card: " + p.Name,
 			EmployeeRfid: p.EmployeeRfid,
 			PostKey:      p.ApiKey,
 			SystemId:     p.SystemId,
