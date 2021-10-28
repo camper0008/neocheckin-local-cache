@@ -16,9 +16,11 @@ func Read() map[string]string {
 	lines := strings.Split(string(content), "\n")
 	for i := 0; i < len(lines); i++ {
 		s := strings.SplitN(lines[i], "=", 2)
-		k, v := s[0], s[1]
-		v = strings.Split(v, "#")[0]
-		r[k] = v
+		if len(s) == 2 {
+			k, v := s[0], s[1]
+			v = strings.Split(v, "#")[0]
+			r[k] = v
+		}
 	}
 
 	return r
