@@ -10,9 +10,26 @@ import (
 	"net/http"
 )
 
-func GetTaskTypes() (rm.GetTaskTypes, error) {
+func createRequest(endpoint string) (*http.Request, error) {
 	conf := c.Read()
-	resp, err := http.Get(conf["API_URL"] + "/tasks/types")
+
+	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+"/employees/all", nil)
+	req.Header.Add("token", conf["WRAPPER_GET_KEY"])
+
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+func GetTaskTypes() (rm.GetTaskTypes, error) {
+	req, err := createRequest("/tasks/types")
+	if err != nil {
+		return rm.GetTaskTypes{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return rm.GetTaskTypes{}, err
 	}
@@ -30,8 +47,12 @@ func GetTaskTypes() (rm.GetTaskTypes, error) {
 }
 
 func GetEmployees() (rm.GetEmployees, error) {
-	conf := c.Read()
-	resp, err := http.Get(conf["API_URL"] + "/employees/all")
+	req, err := createRequest("/employees/all")
+	if err != nil {
+		return rm.GetEmployees{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return rm.GetEmployees{}, err
 	}
