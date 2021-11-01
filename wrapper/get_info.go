@@ -13,7 +13,7 @@ import (
 func createRequest(endpoint string) (*http.Request, error) {
 	conf := c.Read()
 
-	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+"/employees/all", nil)
+	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+endpoint, nil)
 	req.Header.Add("token", conf["WRAPPER_GET_KEY"])
 
 	if err != nil {
