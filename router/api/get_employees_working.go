@@ -37,21 +37,23 @@ func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) 
 
 	// TODO: sort alphabetically
 
-	e := make([]em.Employee, len(dbE))
-	o := make(map[string][]em.Employee)
+	e := []em.Employee{}
+	o := map[string][]em.Employee{}
 
 	for i := range e {
-		e[i] = em.Employee{
-			Name:       dbE[i].Name,
-			Flex:       dbE[i].Flex,
-			Working:    dbE[i].Working,
-			Department: dbE[i].Department,
-			Photo:      dbE[i].Photo,
+		if dbE[i].Working {
+			e = append(e, em.Employee{
+				Name:       dbE[i].Name,
+				Flex:       dbE[i].Flex,
+				Working:    dbE[i].Working,
+				Department: dbE[i].Department,
+				Photo:      dbE[i].Photo,
+			})
+			if o[e[i].Department] == nil {
+				o[e[i].Department] = []em.Employee{}
+			}
+			o[e[i].Department] = append(o[e[i].Department], e[i])
 		}
-		if o[e[i].Department] == nil {
-			o[e[i].Department] = []em.Employee{}
-		}
-		o[e[i].Department] = append(o[e[i].Department], e[i])
 	}
 
 	return rsm.WorkingEmployees{
