@@ -2,7 +2,6 @@
 package wrapper
 
 import (
-	c "neocheckin_cache/config"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
@@ -10,21 +9,8 @@ import (
 	"net/http"
 )
 
-func createRequest(endpoint string) (*http.Request, error) {
-	conf := c.Read()
-
-	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+endpoint, nil)
-	req.Header.Add("token", conf["WRAPPER_GET_KEY"])
-
-	if err != nil {
-		return nil, err
-	}
-
-	return req, nil
-}
-
 func GetTaskTypes() (rm.GetTaskTypes, error) {
-	req, err := createRequest("/tasks/types")
+	req, err := utils.CreateGetRequest("/tasks/types")
 	if err != nil {
 		return rm.GetTaskTypes{}, err
 	}
@@ -47,7 +33,7 @@ func GetTaskTypes() (rm.GetTaskTypes, error) {
 }
 
 func GetEmployees() (rm.GetEmployees, error) {
-	req, err := createRequest("/employees/all")
+	req, err := utils.CreateGetRequest("/employees/all")
 	if err != nil {
 		return rm.GetEmployees{}, err
 	}
