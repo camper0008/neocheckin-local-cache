@@ -40,19 +40,20 @@ func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) 
 	e := []em.Employee{}
 	o := map[string][]em.Employee{}
 
-	for i := range e {
+	for i := range dbE {
 		if dbE[i].Working {
-			e = append(e, em.Employee{
+			genE := em.Employee{
 				Name:       dbE[i].Name,
 				Flex:       dbE[i].Flex,
 				Working:    dbE[i].Working,
 				Department: dbE[i].Department,
 				Photo:      dbE[i].Photo,
-			})
-			if o[e[i].Department] == nil {
-				o[e[i].Department] = []em.Employee{}
 			}
-			o[e[i].Department] = append(o[e[i].Department], e[i])
+			e = append(e, genE)
+			if o[genE.Department] == nil {
+				o[genE.Department] = []em.Employee{}
+			}
+			o[genE.Department] = append(o[genE.Department], genE)
 		}
 	}
 
