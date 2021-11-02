@@ -25,7 +25,7 @@ func getRfidFromPath(p string) string {
 }
 
 func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
-	rw.Header().Add("Content-Type", "application/json")
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	p := rq.URL.Path
 	rfid := getRfidFromPath(p)

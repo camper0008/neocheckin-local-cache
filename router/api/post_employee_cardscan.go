@@ -35,7 +35,7 @@ func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.Car
 }
 
 func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
-	rw.Header().Add("Content-Type", "application/json")
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	var p rqm.CardScanned
 	err := utils.ParseBody(utils.ParseableBody{Body: rq.Body, Header: rq.Header}, &p)

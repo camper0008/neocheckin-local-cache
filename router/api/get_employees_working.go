@@ -10,7 +10,7 @@ import (
 )
 
 func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
-	rw.Header().Add("Content-Type", "application/json")
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	w, err := GetEmployeesWorking(db)
 
