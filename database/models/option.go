@@ -1,7 +1,7 @@
 package models
 
 type Option struct {
-	DatabaseModel
+	DatabaseId  string
 	WrapperId   int
 	Name        string
 	DisplayName string

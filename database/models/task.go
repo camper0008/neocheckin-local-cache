@@ -1,7 +1,7 @@
 package models
 
 type Task struct {
-	DatabaseModel
+	DatabaseId   string
 	TaskId       int
 	Name         string
 	EmployeeRfid string
