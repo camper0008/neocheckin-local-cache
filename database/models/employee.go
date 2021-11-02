@@ -1,7 +1,7 @@
 package models
 
 type Employee struct {
-	DatabaseModel
+	DatabaseId string
 	WrapperId  int
 	Rfid       string
 	Name       string

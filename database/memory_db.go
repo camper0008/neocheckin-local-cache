@@ -68,6 +68,12 @@ func (db *MemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
 }
 
 func (db *MemoryDatabase) ReplaceEmployees(e []m.Employee) error {
+	for i := range e {
+		if e[i].DatabaseId == "" {
+			id := utils.GenerateUUID()
+			e[i].DatabaseId = id
+		}
+	}
 	db.employees = e
 	return nil
 }
@@ -89,17 +95,17 @@ func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
 }
 
 func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employee) error {
-	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
+	i, _, err := findEmployee(db.employees, func(e m.Employee) bool {
 		return e.DatabaseId == id
 	})
 
 	if err == nil {
-		empl.Rfid = props.Rfid
-		empl.Name = props.Name
-		empl.Flex = props.Flex
-		empl.Working = props.Working
-		empl.Department = props.Department
-		empl.Photo = props.Photo
+		db.employees[i].Rfid = props.Rfid
+		db.employees[i].Name = props.Name
+		db.employees[i].Flex = props.Flex
+		db.employees[i].Working = props.Working
+		db.employees[i].Department = props.Department
+		db.employees[i].Photo = props.Photo
 
 		return nil
 	}
@@ -150,6 +156,12 @@ func (db *MemoryDatabase) GetAllOptions() ([]m.Option, error) {
 }
 
 func (db *MemoryDatabase) ReplaceOptions(o []m.Option) error {
+	for i := range o {
+		if o[i].DatabaseId == "" {
+			id := utils.GenerateUUID()
+			o[i].DatabaseId = id
+		}
+	}
 	db.options = o
 	return nil
 }
@@ -172,14 +184,14 @@ func (db *MemoryDatabase) InsertOption(opt m.Option) error {
 }
 
 func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) error {
-	_, opt, err := findOption(db.options, func(o m.Option) bool {
+	i, _, err := findOption(db.options, func(o m.Option) bool {
 		return o.DatabaseId == id
 	})
 
 	if err == nil {
-		opt.Name = props.Name
-		opt.WrapperId = props.WrapperId
-		opt.Schedule = props.Schedule
+		db.options[i].Name = props.Name
+		db.options[i].WrapperId = props.WrapperId
+		db.options[i].Schedule = props.Schedule
 	}
 
 	return fmt.Errorf("could not find Option with database id '%s'", id)

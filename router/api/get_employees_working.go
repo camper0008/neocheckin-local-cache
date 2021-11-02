@@ -10,7 +10,7 @@ import (
 )
 
 func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
-	rw.Header().Add("Content-Type", "application/json")
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	w, err := GetEmployeesWorking(db)
 
@@ -37,21 +37,24 @@ func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) 
 
 	// TODO: sort alphabetically
 
-	e := make([]em.Employee, len(dbE))
-	o := make(map[string][]em.Employee)
+	e := []em.Employee{}
+	o := map[string][]em.Employee{}
 
-	for i := range e {
-		e[i] = em.Employee{
-			Name:       dbE[i].Name,
-			Flex:       dbE[i].Flex,
-			Working:    dbE[i].Working,
-			Department: dbE[i].Department,
-			Photo:      dbE[i].Photo,
+	for i := range dbE {
+		if dbE[i].Working {
+			genE := em.Employee{
+				Name:       dbE[i].Name,
+				Flex:       dbE[i].Flex,
+				Working:    dbE[i].Working,
+				Department: dbE[i].Department,
+				Photo:      dbE[i].Photo,
+			}
+			e = append(e, genE)
+			if o[genE.Department] == nil {
+				o[genE.Department] = []em.Employee{}
+			}
+			o[genE.Department] = append(o[genE.Department], genE)
 		}
-		if o[e[i].Department] == nil {
-			o[e[i].Department] = []em.Employee{}
-		}
-		o[e[i].Department] = append(o[e[i].Department], e[i])
 	}
 
 	return rsm.WorkingEmployees{

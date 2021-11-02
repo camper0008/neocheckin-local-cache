@@ -3,7 +3,6 @@ package wrapper
 import (
 	"bytes"
 	"fmt"
-	c "neocheckin_cache/config"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
@@ -57,8 +56,12 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 		return http.StatusInternalServerError, err
 	}
 
-	conf := c.Read()
-	resp, err := http.Post(conf["WRAPPER_URL"]+"/tasks/add", "application/json", bytes.NewBuffer(enc))
+	req, err := utils.CreatePostRequest("/tasks/add", t.PostKey, bytes.NewBuffer(enc))
+	if err != nil {
+		return http.StatusInternalServerError, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		db.AddTask(dbm.Task{
 			TaskId:       t.TaskId,
@@ -85,12 +88,16 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 			})
 		}
 		rErr := rsm.Error{}
-		pErr := utils.ParseBody(utils.ParseableBody{Body: resp.Body, Header: resp.Header}, rErr)
+		pErr := utils.ParseBody(utils.ParseableBody{Body: resp.Body, Header: resp.Header}, &rErr)
 		if pErr != nil {
 			return http.StatusInternalServerError, pErr
 		}
 		// TODO: add to task logs
 		return resp.StatusCode, fmt.Errorf(rErr.Error)
+	}
+
+	if resp.StatusCode >= 400 {
+		return resp.StatusCode, fmt.Errorf("recieved unexpected status code")
 	}
 
 	if resp.StatusCode == http.StatusOK && err == nil && !queued {

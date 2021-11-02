@@ -13,7 +13,7 @@ import (
 )
 
 func GetOptionsEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
-	rw.Header().Add("Content-Type", "application/json")
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	dbO, err := db.GetAllOptions()
 	if err != nil {
