@@ -10,6 +10,7 @@ type TaskType struct {
 	Locations   []string `json:"exclusiveLocations"`
 	Category    string   `json:"category"`
 	BlankField  bool     `json:"active"` // "Active", though unused for our program
+	Error       string   `json:"error"`
 }
 
 type ScheduleTime struct {
