@@ -10,6 +10,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om koden virker
 func getRfidFromPath(p string) string {
 	i := 0
 	a := make([]byte, len(p))
@@ -32,6 +33,7 @@ func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db dbt
 
 	empl, err := GetEmployeeFromRfid(db, rfid)
 
+	// FIXME jeg ved ikke om koden virker, extract og test
 	if err == nil {
 		encoded, err := utils.JsonEncode(rsm.GetEmployee{
 			Employee: em.Employee{
@@ -55,6 +57,8 @@ func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db dbt
 	}
 }
 
+// TESTET ✅✅ LETS GOO 💪💪💪
+// FIXME dog kun 16.7% coverage, så det at testen passer fortæller mig intet
 func GetEmployeeFromRfid(db dbt.AbstractDatabase, rfid string) (m.Employee, error) {
 	empl, err := db.GetEmployeeWithRfid(rfid)
 	if err != nil {

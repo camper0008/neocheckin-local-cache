@@ -12,6 +12,8 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om koden virker
+// men tak for endelig at extrace conversion
 func convertTaskToRequest(t em.Task) rqm.AddTask {
 	return rqm.AddTask{
 		Name:         t.Name,
@@ -23,6 +25,7 @@ func convertTaskToRequest(t em.Task) rqm.AddTask {
 	}
 }
 
+// FIXME jeg ved ikke om koden virker
 func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
 	t, err := db.GetAllTasks()
 	if err != nil {
@@ -48,6 +51,7 @@ func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
 	}
 }
 
+// FIXME jeg ved ikke om koden virker, også for lang
 func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 
 	enc, err := utils.JsonEncode(convertTaskToRequest(t))

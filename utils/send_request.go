@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om koden virker
 func CreateGetRequest(endpoint string) (*http.Request, error) {
 	conf := c.Read()
 
@@ -19,6 +20,7 @@ func CreateGetRequest(endpoint string) (*http.Request, error) {
 	return req, nil
 }
 
+// FIXME jeg ved ikke om koden virker
 func CreatePostRequest(endpoint string, token string, body io.Reader) (*http.Request, error) {
 	conf := c.Read()
 

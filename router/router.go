@@ -23,6 +23,9 @@ func (r *Router) Register(e Endpoint) {
 
 func (r *Router) Handle(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
 	for i := range r.endpoints {
+
+		// FIXME måske extract ud i en funktion, så `if enpointMatches(rq, r) {`
+
 		reP := regexp.MustCompile("^" + r.Path + r.endpoints[i].Path + "$")
 
 		if reP.FindString(rq.URL.Path) != "" && rq.Method == r.endpoints[i].Method {

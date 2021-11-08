@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om funktionen virker
 func synchronizeWrapperAndCache(db database.AbstractDatabase) {
 
 	t, err := w.GetTaskTypes()
@@ -33,6 +34,7 @@ func main() {
 	synchronizeWrapperAndCache(&db)
 	fmt.Println("Done")
 
+	// FIXME måske extract ud til `setupApiServer(&db)`
 	router := router.ConnectAPI(&db)
 	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
 		router.Handle(rw, *r, &db)

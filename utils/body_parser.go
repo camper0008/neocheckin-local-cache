@@ -14,6 +14,8 @@ type ParseableBody struct {
 	Header http.Header
 }
 
+// FIXME test failer med 0.0% coverage ❌❌ DOG TEST 💪💪💪
+// FIXME extract funktioner
 func ParseBody(pb ParseableBody, m interface{}) error {
 	headerContentType := pb.Header.Get("Content-Type")
 	r := regexp.MustCompile("application/json")

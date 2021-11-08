@@ -5,6 +5,7 @@ import (
 	"fmt"
 )
 
+// FIXME jeg ved ikke om koden virker
 func JsonEncode(s interface{}) ([]byte, error) {
 	b, err := json.Marshal(s)
 

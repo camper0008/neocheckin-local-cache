@@ -13,6 +13,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om koden virker
 func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.CardScanned) error {
 	missing := []string{}
 	if p.ApiKey == "" {

@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om funktionen virker
 func HeaderIsValid(h http.Header) bool {
 	conf := c.Read()
 	token := h.Get("Token")
@@ -14,6 +15,7 @@ func HeaderIsValid(h http.Header) bool {
 	return token == conf["CACHE_GET_KEY"]
 }
 
+// FIXME jeg ved ikke om funktionen virker
 func ConnectAPI(db dbt.AbstractDatabase) Router {
 	router := Router{
 		Path: "/api",
