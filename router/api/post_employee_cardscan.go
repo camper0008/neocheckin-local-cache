@@ -35,6 +35,7 @@ func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.Car
 	}
 }
 
+// FIXME https://vimeo.com/643447115
 func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
 	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
