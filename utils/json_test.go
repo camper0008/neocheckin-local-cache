@@ -6,9 +6,9 @@ import (
 )
 
 type exampleBody struct {
-	Name    string
-	Age     int
-	Pointer interface{}
+	Name    string      `json:"name"`
+	Age     int         `json:"age"`
+	Pointer interface{} `json:"pointer"`
 }
 
 func TestJsonEncode(t *testing.T) {
