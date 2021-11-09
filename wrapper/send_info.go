@@ -54,54 +54,37 @@ func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
 // FIXME jeg ved ikke om koden virker, også for lang
 func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 
-	enc, err := utils.JsonEncode(convertTaskToRequest(t))
-	if err != nil {
-		// TODO: add to task logs
-		return http.StatusInternalServerError, err
-	}
-
-	req, err := utils.CreatePostRequest("/tasks/add", t.PostKey, bytes.NewBuffer(enc))
+	// TODO: add to task logs
+	req, err := createRequestWithBody(t)
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		db.AddTask(dbm.Task{
-			TaskId:       t.TaskId,
-			Name:         t.Name,
-			EmployeeRfid: t.EmployeeRfid,
-			SystemId:     t.SystemId,
-			Timestamp:    t.Timestamp,
-		})
+		addTaskToQueue(db, t)
 		// TODO: add to task logs
 		return http.StatusInternalServerError, err
 	}
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusBadRequest || resp.StatusCode == http.StatusInternalServerError {
-		if resp.StatusCode == http.StatusInternalServerError && !queued {
-			// TODO: add db errors to logs
-			db.AddTask(dbm.Task{
-				TaskId:       t.TaskId,
-				Name:         t.Name,
-				EmployeeRfid: t.EmployeeRfid,
-				SystemId:     t.SystemId,
-				Timestamp:    t.Timestamp,
-			})
-		}
-		rErr := rsm.Error{}
-		pErr := utils.ParseBody(utils.ParseableBody{Body: resp.Body, Header: resp.Header}, &rErr)
-		if pErr != nil {
-			return http.StatusInternalServerError, pErr
-		}
-		// TODO: add to task logs
-		return resp.StatusCode, fmt.Errorf(rErr.Error)
-	}
-
 	if resp.StatusCode >= 400 {
-		return resp.StatusCode, fmt.Errorf("recieved unexpected status code")
+		message, parseError := getResponseErrorMessage(resp, queued, db, t)
+		if parseError != nil {
+			return http.StatusInternalServerError, parseError
+		} else {
+			// TODO: add error message to task logs
+			fmt.Println(message)
+		}
+
+		if resp.StatusCode == http.StatusInternalServerError && !queued {
+
+			addTaskToQueue(db, t)
+
+		}
+
+		return resp.StatusCode, nil
 	}
 
 	if resp.StatusCode == http.StatusOK && err == nil && !queued {
@@ -109,4 +92,47 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
 	}
 
 	return http.StatusOK, nil
+}
+
+func addTaskToQueue(db dbt.AbstractDatabase, t em.Task) {
+	// TODO: add db errors to logs
+	db.AddTask(dbm.Task{
+		TaskId:       t.TaskId,
+		Name:         t.Name,
+		EmployeeRfid: t.EmployeeRfid,
+		SystemId:     t.SystemId,
+		Timestamp:    t.Timestamp,
+	})
+}
+
+func getResponseErrorMessage(resp *http.Response, queued bool, db dbt.AbstractDatabase, t em.Task) (string, error) {
+	// TODO: add to task logs
+	parsedError, errorDuringParsing := parseResponseError(resp)
+	if errorDuringParsing != nil {
+		return "", errorDuringParsing
+	}
+
+	return parsedError.Error, nil
+}
+
+func parseResponseError(resp *http.Response) (rsm.Error, error) {
+	rErr := rsm.Error{}
+	pErr := utils.ParseBody(utils.ParseableBody{Body: resp.Body, Header: resp.Header}, &rErr)
+	if pErr != nil {
+		return rsm.Error{}, pErr
+	}
+	return rErr, nil
+}
+
+func createRequestWithBody(t em.Task) (*http.Request, error) {
+	enc, err := utils.JsonEncode(convertTaskToRequest(t))
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := utils.CreatePostRequest("/tasks/add", t.PostKey, bytes.NewBuffer(enc))
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
 }
