@@ -26,6 +26,7 @@ func CreatePostRequest(endpoint string, body io.Reader) (*http.Request, error) {
 
 	req, err := http.NewRequest("POST", conf["WRAPPER_URL"]+endpoint, body)
 	req.Header.Add("token", conf["WRAPPER_KEY"])
+	req.Header.Add("Content-Type", "application/json")
 
 	if err != nil {
 		return nil, err

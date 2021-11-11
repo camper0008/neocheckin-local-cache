@@ -1,7 +1,6 @@
 package wrapper
 
 import (
-	"bytes"
 	"fmt"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
@@ -10,6 +9,7 @@ import (
 	rqm "neocheckin_cache/wrapper/models/request_models"
 	rsm "neocheckin_cache/wrapper/models/response_models"
 	"net/http"
+	"strings"
 )
 
 // FIXME jeg ved ikke om koden virker
@@ -129,9 +129,8 @@ func createRequestWithBody(t em.Task) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
-	fmt.Printf("jason strong: %s\n", string(enc))
 
-	req, err := utils.CreatePostRequest("/tasks/add", bytes.NewBuffer(enc))
+	req, err := utils.CreatePostRequest("/tasks/add", strings.NewReader(string(enc)))
 	if err != nil {
 		return nil, err
 	}
