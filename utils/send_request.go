@@ -11,7 +11,7 @@ func CreateGetRequest(endpoint string) (*http.Request, error) {
 	conf := c.Read()
 
 	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+endpoint, nil)
-	req.Header.Add("token", conf["WRAPPER_GET_KEY"])
+	req.Header.Add("token", conf["WRAPPER_KEY"])
 
 	if err != nil {
 		return nil, err
@@ -21,11 +21,11 @@ func CreateGetRequest(endpoint string) (*http.Request, error) {
 }
 
 // FIXME jeg ved ikke om koden virker
-func CreatePostRequest(endpoint string, token string, body io.Reader) (*http.Request, error) {
+func CreatePostRequest(endpoint string, body io.Reader) (*http.Request, error) {
 	conf := c.Read()
 
 	req, err := http.NewRequest("POST", conf["WRAPPER_URL"]+endpoint, body)
-	req.Header.Add("token", token)
+	req.Header.Add("token", conf["WRAPPER_KEY"])
 
 	if err != nil {
 		return nil, err

@@ -129,8 +129,9 @@ func createRequestWithBody(t em.Task) (*http.Request, error) {
 	if err != nil {
 		return nil, err
 	}
+	fmt.Printf("jason strong: %s\n", string(enc))
 
-	req, err := utils.CreatePostRequest("/tasks/add", t.PostKey, bytes.NewBuffer(enc))
+	req, err := utils.CreatePostRequest("/tasks/add", bytes.NewBuffer(enc))
 	if err != nil {
 		return nil, err
 	}
