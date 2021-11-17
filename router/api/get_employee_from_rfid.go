@@ -25,7 +25,7 @@ func getRfidFromPath(p string) string {
 	return string(a)
 }
 
-func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
+func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
 	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	p := rq.URL.Path
