@@ -26,10 +26,10 @@ func convertTaskToRequest(t em.Task) rqm.AddTask {
 }
 
 // FIXME jeg ved ikke om koden virker
-func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
+func sendQueuedTasks(db dbt.AbstractDatabase, pk string, l *utils.Logger) {
 	t, err := db.GetAllTasks()
 	if err != nil {
-		// TODO: add to task logs
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error getting all tasks: %q", err.Error()))
 		return
 	}
 	for i := 0; i < len(t); i++ {
@@ -40,11 +40,11 @@ func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
 			PostKey:      pk,
 			SystemId:     t[i].SystemId,
 			Timestamp:    t[i].Timestamp,
-		}, db, true)
+		}, db, l, true)
 		if status == http.StatusOK && err == nil {
 			err := db.DeleteTaskWithDatabaseId(t[i].DatabaseId)
 			if err != nil {
-				//TODO: add to task logs
+				l.FormatAndAppendToLogFile(fmt.Sprintf("error deleting queued task: %q", err.Error()))
 				continue
 			}
 		}
@@ -52,63 +52,62 @@ func sendQueuedTasks(db dbt.AbstractDatabase, pk string) {
 }
 
 // FIXME jeg ved ikke om koden virker, også for lang
-func SendTask(t em.Task, db dbt.AbstractDatabase, queued bool) (int, error) {
+func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) (int, error) {
 
-	// TODO: add to task logs
 	req, err := createRequestWithBody(t)
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to create request with body: %q", err.Error()))
 		return http.StatusInternalServerError, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		addTaskToQueue(db, t)
-		// TODO: add to task logs
+		addTaskToQueue(db, t, l)
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to send request: %q", err.Error()))
 		return http.StatusInternalServerError, err
 	}
 
 	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
-		message, parseError := getResponseErrorMessage(resp, queued, db, t)
+		message, parseError := getResponseErrorMessage(resp, queued, db, t, l)
 		if parseError != nil {
 			return http.StatusInternalServerError, parseError
 		} else {
-			// TODO: add error message to task logs
-			fmt.Println(message)
+			l.FormatAndAppendToLogFile(fmt.Sprintf("got a status code >400 from wrapper with message %q", message))
 		}
 
 		if resp.StatusCode == http.StatusInternalServerError && !queued {
-
-			addTaskToQueue(db, t)
-
+			addTaskToQueue(db, t, l)
 		}
 
 		return resp.StatusCode, nil
 	}
 
 	if resp.StatusCode == http.StatusOK && err == nil && !queued {
-		sendQueuedTasks(db, t.PostKey)
+		sendQueuedTasks(db, t.PostKey, l)
 	}
 
 	return http.StatusOK, nil
 }
 
-func addTaskToQueue(db dbt.AbstractDatabase, t em.Task) {
-	// TODO: add db errors to logs
-	db.AddTask(dbm.Task{
+func addTaskToQueue(db dbt.AbstractDatabase, t em.Task, l *utils.Logger) {
+	err := db.AddTask(dbm.Task{
 		TaskId:       t.TaskId,
 		Name:         t.Name,
 		EmployeeRfid: t.EmployeeRfid,
 		SystemId:     t.SystemId,
 		Timestamp:    t.Timestamp,
 	})
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error adding task to queue: %q", err.Error()))
+	}
 }
 
-func getResponseErrorMessage(resp *http.Response, queued bool, db dbt.AbstractDatabase, t em.Task) (string, error) {
-	// TODO: add to task logs
+func getResponseErrorMessage(resp *http.Response, queued bool, db dbt.AbstractDatabase, t em.Task, l *utils.Logger) (string, error) {
 	parsedError, errorDuringParsing := parseResponseError(resp)
 	if errorDuringParsing != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred during parsing response: %q", errorDuringParsing.Error()))
 		return "", errorDuringParsing
 	}
 
