@@ -14,7 +14,7 @@ import (
 func synchronizeWrapperAndCache(db database.AbstractDatabase, l *utils.Logger) {
 
 	fmt.Println("Attempting to synchronize...")
-	t, err := w.GetTaskTypes()
+	t, err := w.GetTaskTypes(l)
 	if err != nil {
 		fmt.Printf("Error synchronizing task types: %v\n", err)
 		l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing task types: %v", err))
@@ -22,7 +22,7 @@ func synchronizeWrapperAndCache(db database.AbstractDatabase, l *utils.Logger) {
 		w.UpdateDbFromTaskTypes(db, t)
 	}
 
-	e, err := w.GetEmployees()
+	e, err := w.GetEmployees(l)
 	if err != nil {
 		fmt.Printf("Error synchronizing employees: %v\n", err)
 		l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing employees: %v", err))
