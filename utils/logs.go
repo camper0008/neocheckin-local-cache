@@ -23,9 +23,9 @@ func GetFormattedDate(t time.Time) string {
 	)
 }
 
-func FormatLogMessage(msg string) string {
-	t := GetFormattedDate(time.Now())
-	return t + ":\n\t" + msg
+func FormatLogMessage(t time.Time, msg string) string {
+	f := GetFormattedDate(t)
+	return f + ":\n\t" + msg
 }
 
 func CreateLogsFolder() error {
@@ -43,24 +43,25 @@ func CreateLogsFolder() error {
 	return err
 }
 
-func (l *Logger) CreateLogFile() {
+func (l *Logger) CreateLogFile() error {
 	err := CreateLogsFolder()
 	if err != nil && !errors.Is(err, os.ErrExist) {
-		fmt.Printf("an error occured creating logs folder: %v", err)
-		return
+		return fmt.Errorf("an error occurred creating logs folder: %v", err)
+
 	}
 	name := GetFormattedDate(time.Now())
 	f, err := os.Create("logs/" + name + ".txt")
 	if err != nil {
-		fmt.Printf("an error occured creating log file: %v", err)
-		return
+		return fmt.Errorf("an error occurred creating log file: %v", err)
+
 	}
 	f.Close()
 	l.Filename = "logs/" + name + ".txt"
+	return nil
 }
 
 func (l *Logger) FormatAndAppendToLogFile(msg string) error {
-	formatted := FormatLogMessage(msg)
+	formatted := FormatLogMessage(time.Now(), msg)
 	err := l.AppendToLogFile(formatted)
 	return err
 }
