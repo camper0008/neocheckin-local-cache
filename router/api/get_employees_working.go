@@ -29,6 +29,7 @@ func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt
 	}
 }
 
+// FIXME for lang, jeg ved ikke om det virker
 func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) {
 	dbE, err := db.GetAllEmployees()
 	if err != nil {

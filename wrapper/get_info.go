@@ -9,6 +9,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om koden virker
 func GetTaskTypes() (rm.GetTaskTypes, error) {
 	req, err := utils.CreateGetRequest("/tasks/types")
 	if err != nil {
@@ -32,6 +33,7 @@ func GetTaskTypes() (rm.GetTaskTypes, error) {
 	return parsed, nil
 }
 
+// FIXME jeg ved ikke om koden virker
 func GetEmployees() (rm.GetEmployees, error) {
 	req, err := utils.CreateGetRequest("/employees/all")
 	if err != nil {
@@ -55,10 +57,12 @@ func GetEmployees() (rm.GetEmployees, error) {
 	return parsed, nil
 }
 
+// FIXME jeg ved ikke om koden virker
 func taskTypesResponseToDbModels(r rm.GetTaskTypes) []dbm.Option {
 	data := r.Data
 	res := make([]dbm.Option, len(data))
 	for i := 0; i < len(data); i++ {
+		// FIXME mange linjer, ingen information
 		res[i] = dbm.Option{
 			WrapperId:   data[i].Id,
 			Name:        data[i].Name,
@@ -91,10 +95,13 @@ func taskTypesResponseToDbModels(r rm.GetTaskTypes) []dbm.Option {
 	}
 	return res
 }
+
+// FIXME jeg ved ikke om koden virker
 func employeesResponseToDbModels(r rm.GetEmployees) []dbm.Employee {
 	data := r.Data
 	res := make([]dbm.Employee, len(data))
 	for i := 0; i < len(data); i++ {
+		// FIXME mange linjer, ingen information
 		res[i] = dbm.Employee{
 			WrapperId:  data[i].WrapperId,
 			Rfid:       data[i].Rfid,
@@ -108,12 +115,14 @@ func employeesResponseToDbModels(r rm.GetEmployees) []dbm.Employee {
 	return res
 }
 
+// FIXME jeg ved ikke om koden virker
 func UpdateDbFromTaskTypes(db dbt.AbstractDatabase, r rm.GetTaskTypes) error {
 	o := taskTypesResponseToDbModels(r)
 	err := db.ReplaceOptions(o)
 	return err
 }
 
+// FIXME jeg ved ikke om koden virker
 func UpdateDbFromEmployees(db dbt.AbstractDatabase, r rm.GetEmployees) error {
 	e := employeesResponseToDbModels(r)
 	err := db.ReplaceEmployees(e)

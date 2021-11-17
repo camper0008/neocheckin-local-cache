@@ -6,6 +6,7 @@ import (
 	"net/http"
 )
 
+// FIXME jeg ved ikke om koden virker
 func WriteError(rw http.ResponseWriter, err error) {
 	encoded, err := JsonEncode(rsm.Error{
 		Error: err.Error(),
@@ -21,6 +22,7 @@ func WriteError(rw http.ResponseWriter, err error) {
 	}
 }
 
+// FIXME jeg ved ikke om koden virker
 func WriteServerError(rw http.ResponseWriter, err error) {
 	encoded, err := JsonEncode(rsm.Error{
 		Error: err.Error(),

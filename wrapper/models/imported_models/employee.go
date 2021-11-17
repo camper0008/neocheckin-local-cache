@@ -8,4 +8,5 @@ type Employee struct {
 	Working    bool   `json:"working"`
 	Department string `json:"department"`
 	Photo      string `json:"photo"`
+	Error      string `json:"error"`
 }

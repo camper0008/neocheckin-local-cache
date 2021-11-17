@@ -14,14 +14,21 @@ type ParseableBody struct {
 	Header http.Header
 }
 
-func ParseBody(pb ParseableBody, m interface{}) error {
-	headerContentType := pb.Header.Get("Content-Type")
-	r := regexp.MustCompile("application/json")
-	if r.FindString(headerContentType) == "" {
-		return fmt.Errorf("invalid content type, got '%s', expected 'application/json'", headerContentType)
+func ParseBody(pb ParseableBody, target interface{}) error {
+	isValidError := isHeaderValid(pb)
+	if isValidError != nil {
+		return isValidError
 	}
-	var unmarshalErr *json.UnmarshalTypeError
 
+	decoderErr := decodeBodyJson(pb, target)
+	if decoderErr != nil {
+		return decoderErr
+	}
+	return nil
+}
+
+func decodeBodyJson(pb ParseableBody, m interface{}) error {
+	var unmarshalErr *json.UnmarshalTypeError
 	decoder := json.NewDecoder(pb.Body)
 	decoder.DisallowUnknownFields()
 	err := decoder.Decode(&m)
@@ -31,6 +38,15 @@ func ParseBody(pb ParseableBody, m interface{}) error {
 		} else {
 			return fmt.Errorf("bad request %s", err.Error())
 		}
+	}
+	return nil
+}
+
+func isHeaderValid(pb ParseableBody) error {
+	headerContentType := pb.Header.Get("Content-Type")
+	r := regexp.MustCompile("application/json")
+	if r.FindString(headerContentType) == "" {
+		return fmt.Errorf("invalid content type, got '%s', expected 'application/json'", headerContentType)
 	}
 	return nil
 }

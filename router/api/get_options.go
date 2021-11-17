@@ -85,11 +85,14 @@ func OptionIsAvailable(o dbm.Option) bool {
 	return false
 }
 
+// TESTET ✅✅ LETS GOO 💪💪💪
+// FIXME dog kun 45.8% coverage, så det at testen passer fortæller mig stortset intet
 func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
 	r := make([]em.Option, len(d))
 	for i := 0; i < len(d); i++ {
 		a := OptionIsAvailable(d[i])
 
+		// FIXME hvad prøver koden at gøre, extract
 		oa := em.OptionAvailable(em.NOT_AVAILABLE)
 		if a && d[i].Priority {
 			oa = em.OptionAvailable(em.PRIORITY)
@@ -97,6 +100,7 @@ func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
 			oa = em.OptionAvailable(em.AVAILABLE)
 		}
 
+		// FIXME hvad prøver koden at gøre, extract
 		r[i] = em.Option{
 			Id:          d[i].WrapperId,
 			Name:        d[i].Name,
