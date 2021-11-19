@@ -1,2 +1,7 @@
 settings.conf
-neocheckin_cache # built binary
+# built binary
+neocheckin_cache
+# ignore logs
+logs/*
+# keep logs folder
+!logs/.gitkeep

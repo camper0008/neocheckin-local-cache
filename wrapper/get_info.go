@@ -1,7 +1,7 @@
-// TODO: log all errors
 package wrapper
 
 import (
+	"fmt"
 	dbt "neocheckin_cache/database"
 	dbm "neocheckin_cache/database/models"
 	"neocheckin_cache/utils"
@@ -10,14 +10,16 @@ import (
 )
 
 // FIXME jeg ved ikke om koden virker
-func GetTaskTypes() (rm.GetTaskTypes, error) {
+func GetTaskTypes(l *utils.Logger) (rm.GetTaskTypes, error) {
 	req, err := utils.CreateGetRequest("/tasks/types")
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred creating request: %q", err.Error()))
 		return rm.GetTaskTypes{}, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred doing request: %q", err.Error()))
 		return rm.GetTaskTypes{}, err
 	}
 
@@ -27,6 +29,7 @@ func GetTaskTypes() (rm.GetTaskTypes, error) {
 		Header: resp.Header,
 	}, &parsed)
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred parsing request body: %q", err.Error()))
 		return rm.GetTaskTypes{}, err
 	}
 
@@ -34,14 +37,16 @@ func GetTaskTypes() (rm.GetTaskTypes, error) {
 }
 
 // FIXME jeg ved ikke om koden virker
-func GetEmployees() (rm.GetEmployees, error) {
+func GetEmployees(l *utils.Logger) (rm.GetEmployees, error) {
 	req, err := utils.CreateGetRequest("/employees/all")
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred creating request: %q", err.Error()))
 		return rm.GetEmployees{}, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred doing request: %q", err.Error()))
 		return rm.GetEmployees{}, err
 	}
 
@@ -51,6 +56,7 @@ func GetEmployees() (rm.GetEmployees, error) {
 		Header: resp.Header,
 	}, &parsed)
 	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred parsing request body: %q", err.Error()))
 		return rm.GetEmployees{}, err
 	}
 

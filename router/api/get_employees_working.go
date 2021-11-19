@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
+func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
 	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	w, err := GetEmployeesWorking(db)

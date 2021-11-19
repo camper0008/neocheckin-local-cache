@@ -35,8 +35,8 @@ func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.Car
 	}
 }
 
-// FIXME https://vimeo.com/643447115
-func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase) {
+// FIXME
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
 	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
 
 	var p rqm.CardScanned
@@ -85,7 +85,7 @@ func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db db
 			PostKey:      p.ApiKey,
 			SystemId:     p.SystemId,
 			Timestamp:    p.Timestamp,
-		}, db, false)
+		}, db, l, false)
 
 		if err != nil {
 			if statusCode == http.StatusBadRequest {
