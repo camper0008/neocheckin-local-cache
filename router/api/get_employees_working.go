@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	dbt "neocheckin_cache/database"
+	"neocheckin_cache/database/models"
 	em "neocheckin_cache/router/api/models/exported_models"
 	rsm "neocheckin_cache/router/api/models/response_models"
 	"neocheckin_cache/utils"
@@ -38,28 +39,57 @@ func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) 
 
 	// TODO: sort alphabetically
 
-	e := []em.Employee{}
-	o := map[string][]em.Employee{}
-
-	for i := range dbE {
-		if dbE[i].Working {
-			genE := em.Employee{
-				Name:       dbE[i].Name,
-				Flex:       dbE[i].Flex,
-				Working:    dbE[i].Working,
-				Department: dbE[i].Department,
-				Photo:      dbE[i].Photo,
-			}
-			e = append(e, genE)
-			if o[genE.Department] == nil {
-				o[genE.Department] = []em.Employee{}
-			}
-			o[genE.Department] = append(o[genE.Department], genE)
-		}
-	}
+	e, o := getUnorderedAndOrderedEmployees(dbE)
 
 	return rsm.WorkingEmployees{
 		Employees: e,
 		Ordered:   o,
 	}, nil
+}
+
+func getUnorderedAndOrderedEmployees(dbE []models.Employee) ([]em.Employee, map[string][]em.Employee) {
+	e := []em.Employee{}
+	o := map[string][]em.Employee{}
+
+	for i := range dbE {
+		if dbE[i].Working {
+			convE := convertDBModelToExportedModel(dbE[i])
+			e = append(e, convE)
+			if o[convE.Department] == nil {
+				o[convE.Department] = []em.Employee{}
+			}
+			o[convE.Department] = append(o[convE.Department], convE)
+		}
+	}
+	SortWorkingEmployees(o)
+	return e, o
+}
+
+func SortWorkingEmployees(o map[string][]em.Employee) {
+	for _, v := range o {
+		sortEmployees(v)
+	}
+}
+
+func sortEmployees(v []em.Employee) {
+	for i := 0; i < len(v)-1; i++ {
+		for j := i; j < len(v)-1; j++ {
+			if utils.CompareString(v[j].Name, v[j+1].Name) > 0 {
+				temp := v[j]
+				v[j] = v[j+1]
+				v[j+1] = temp
+			}
+		}
+	}
+}
+
+func convertDBModelToExportedModel(e models.Employee) em.Employee {
+	genE := em.Employee{
+		Name:       e.Name,
+		Flex:       e.Flex,
+		Working:    e.Working,
+		Department: e.Department,
+		Photo:      e.Photo,
+	}
+	return genE
 }
