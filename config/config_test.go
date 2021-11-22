@@ -29,11 +29,17 @@ func TestRead(t *testing.T) {
 
 func TestParseContent(t *testing.T) {
 	{
-		content := []byte("a=b\nc=d\ne=f")
+		content := []byte(`
+			LOCATION=eux
+			URL="example.com"
+			KEY_WITH_SINGLE_QUOTES='my secret key'
+			KEY_WITH_DOUBLE_QUOTES="my more secret key"
+			#COMMENTED_OUT="should not exist"
+		`)
 		parsed := map[string]string{}
 		c.ParseContent(content, parsed)
-		if parsed["a"] != "b" || parsed["c"] != "d" || parsed["e"] != "f" {
-			t.Error("invalid content")
+		if parsed["LOCATION"] != "eux" || parsed["URL"] != "example.com" || parsed["KEY_WITH_SINGLE_QUOTES"] != "my secret key" || parsed["KEY_WITH_DOUBLE_QUOTES"] != "my more secret key" || parsed["COMMENTED_OUT"] != "" {
+			t.Errorf("invalid content\n%+v", parsed)
 		}
 	}
 	{
