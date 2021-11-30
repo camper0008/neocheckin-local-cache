@@ -92,7 +92,7 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) 
 }
 
 func addTaskToQueue(db dbt.AbstractDatabase, t em.Task, l *utils.Logger) {
-	err := db.AddTask(dbm.Task{
+	err := db.InsertTask(dbm.Task{
 		TaskId:       t.TaskId,
 		Name:         t.Name,
 		EmployeeRfid: t.EmployeeRfid,

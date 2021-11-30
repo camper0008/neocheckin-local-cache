@@ -185,7 +185,12 @@ func (db *MockMemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MockMemoryDatabase) AddTask(task m.Task) error {
+func (db *MockMemoryDatabase) InsertTask(task m.Task) error {
+	
+    if task.DatabaseId == "" {
+		task.DatabaseId = utils.GenerateUUID()
+	}
+
 	_, oldTask, err := findTask(db.tasks, func(e m.Task) bool {
 		return e.DatabaseId == task.DatabaseId
 	})

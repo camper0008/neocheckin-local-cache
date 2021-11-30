@@ -211,7 +211,10 @@ func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 	return fmt.Errorf("could not find Option with database id '%s'", id)
 }
 
-func (db *MemoryDatabase) AddTask(task m.Task) error {
+func (db *MemoryDatabase) InsertTask(task m.Task) error {
+	if task.DatabaseId == "" {
+		task.DatabaseId = utils.GenerateUUID()
+	}
 	_, oldTask, err := findTask(db.tasks, func(e m.Task) bool {
 		return e.DatabaseId == task.DatabaseId
 	})

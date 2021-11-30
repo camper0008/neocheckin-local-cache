@@ -21,7 +21,7 @@ type AbstractDatabase interface {
 	UpdateOptionWithDatabaseId(string, m.Option) error
 	DeleteOptionWithDatabaseId(string) error
 
-	AddTask(m.Task) error
+	InsertTask(m.Task) error
 	GetAllTasks() ([]m.Task, error)
 	DeleteTaskWithDatabaseId(string) error
 }
