@@ -186,8 +186,8 @@ func (db *MockMemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
 }
 
 func (db *MockMemoryDatabase) InsertTask(task m.Task) error {
-	
-    if task.DatabaseId == "" {
+
+	if task.DatabaseId == "" {
 		task.DatabaseId = utils.GenerateUUID()
 	}
 
