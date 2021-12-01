@@ -13,6 +13,8 @@ func CreateGetRequest(endpoint string) (*http.Request, error) {
 	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+endpoint, nil)
 	req.Header.Add("token", conf["WRAPPER_KEY"])
 
+	req.Close = true
+
 	if err != nil {
 		return nil, err
 	}
@@ -27,6 +29,8 @@ func CreatePostRequest(endpoint string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest("POST", conf["WRAPPER_URL"]+endpoint, body)
 	req.Header.Add("token", conf["WRAPPER_KEY"])
 	req.Header.Add("Content-Type", "application/json")
+
+	req.Close = true
 
 	if err != nil {
 		return nil, err
