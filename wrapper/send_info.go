@@ -56,14 +56,14 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) 
 
 	req, err := createRequestWithBody(t)
 	if err != nil {
-		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to create request with body: %q", err.Error()))
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to create request for task (rfid: %s, timestamp: %s, taskid: %s) with body: %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
 		return http.StatusInternalServerError, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		addTaskToQueue(db, t, l)
-		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to send request: %q", err.Error()))
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to send request for task (rfid: %s, timestamp: %s, taskid: %s): %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
 		return http.StatusInternalServerError, err
 	}
 
@@ -74,7 +74,7 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) 
 		if parseError != nil {
 			return http.StatusInternalServerError, parseError
 		} else {
-			l.FormatAndAppendToLogFile(fmt.Sprintf("got a status code >400 from wrapper with message %q", message))
+			l.FormatAndAppendToLogFile(fmt.Sprintf("got a status code >400 for task (rfid: %s, timestamp: %s, taskid: %s) from wrapper with message %q", t.EmployeeRfid, t.Timestamp, t.TaskId, message))
 		}
 
 		if resp.StatusCode == http.StatusInternalServerError && !queued {
