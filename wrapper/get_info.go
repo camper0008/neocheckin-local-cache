@@ -23,7 +23,7 @@ func GetTaskTypes(l *utils.Logger) (rm.GetTaskTypes, error) {
 		return rm.GetTaskTypes{}, err
 	}
 
-	defer closeBodyAndPrint(resp)
+	defer resp.Body.Close()
 
 	parsed := rm.GetTaskTypes{}
 	err = utils.ParseBody(utils.ParseableBody{
@@ -52,7 +52,7 @@ func GetEmployees(l *utils.Logger) (rm.GetEmployees, error) {
 		return rm.GetEmployees{}, err
 	}
 
-	defer closeBodyAndPrint(resp)
+	defer resp.Body.Close()
 
 	parsed := rm.GetEmployees{}
 	err = utils.ParseBody(utils.ParseableBody{

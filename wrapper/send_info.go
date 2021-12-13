@@ -51,11 +51,6 @@ func sendQueuedTasks(db dbt.AbstractDatabase, pk string, l *utils.Logger) {
 	}
 }
 
-func closeBodyAndPrint(resp *http.Response) {
-	resp.Body.Close()
-	fmt.Printf("response body closed")
-}
-
 // FIXME jeg ved ikke om koden virker, også for lang
 func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) (int, error) {
 
@@ -72,9 +67,7 @@ func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) 
 		return http.StatusInternalServerError, err
 	}
 
-	//defer resp.Body.Close()
-	fmt.Printf("%+v\n", resp.Body)
-	defer closeBodyAndPrint(resp)
+	defer resp.Body.Close()
 
 	if resp.StatusCode >= 400 {
 		message, parseError := getResponseErrorMessage(resp, queued, db, t, l)
