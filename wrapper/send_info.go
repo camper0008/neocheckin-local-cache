@@ -51,30 +51,37 @@ func sendQueuedTasks(db dbt.AbstractDatabase, pk string, l *utils.Logger) {
 	}
 }
 
+func closeBodyAndPrint(resp *http.Response) {
+	resp.Body.Close()
+	fmt.Printf("response body closed")
+}
+
 // FIXME jeg ved ikke om koden virker, også for lang
 func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) (int, error) {
 
 	req, err := createRequestWithBody(t)
 	if err != nil {
-		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to create request for task (rfid: %s, timestamp: %s, taskid: %s) with body: %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to create request for task (rfid: %s, timestamp: %s, taskid: %d) with body: %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
 		return http.StatusInternalServerError, err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		addTaskToQueue(db, t, l)
-		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to send request for task (rfid: %s, timestamp: %s, taskid: %s): %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to send request for task (rfid: %s, timestamp: %s, taskid: %d): %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
 		return http.StatusInternalServerError, err
 	}
 
-	defer resp.Body.Close()
+	//defer resp.Body.Close()
+	fmt.Printf("%+v\n", resp.Body)
+	defer closeBodyAndPrint(resp)
 
 	if resp.StatusCode >= 400 {
 		message, parseError := getResponseErrorMessage(resp, queued, db, t, l)
 		if parseError != nil {
 			return http.StatusInternalServerError, parseError
 		} else {
-			l.FormatAndAppendToLogFile(fmt.Sprintf("got a status code >400 for task (rfid: %s, timestamp: %s, taskid: %s) from wrapper with message %q", t.EmployeeRfid, t.Timestamp, t.TaskId, message))
+			l.FormatAndAppendToLogFile(fmt.Sprintf("got a status code >400 for task (rfid: %s, timestamp: %s, taskid: %d) from wrapper with message %q", t.EmployeeRfid, t.Timestamp, t.TaskId, message))
 		}
 
 		if resp.StatusCode == http.StatusInternalServerError && !queued {

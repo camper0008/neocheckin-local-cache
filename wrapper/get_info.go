@@ -23,6 +23,8 @@ func GetTaskTypes(l *utils.Logger) (rm.GetTaskTypes, error) {
 		return rm.GetTaskTypes{}, err
 	}
 
+	defer closeBodyAndPrint(resp)
+
 	parsed := rm.GetTaskTypes{}
 	err = utils.ParseBody(utils.ParseableBody{
 		Body:   resp.Body,
@@ -49,6 +51,8 @@ func GetEmployees(l *utils.Logger) (rm.GetEmployees, error) {
 		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred doing request: %q", err.Error()))
 		return rm.GetEmployees{}, err
 	}
+
+	defer closeBodyAndPrint(resp)
 
 	parsed := rm.GetEmployees{}
 	err = utils.ParseBody(utils.ParseableBody{
