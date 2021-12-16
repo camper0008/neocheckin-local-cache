@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"neocheckin_cache/database"
 	"neocheckin_cache/utils"
+	"time"
 )
 
 func syncTaskTypes(db database.AbstractDatabase, l *utils.Logger) {
@@ -49,9 +50,18 @@ func syncEmployeesWithPhoto(db database.AbstractDatabase, l *utils.Logger) {
 	}
 }
 
-func SyncWrapperAndCache(db database.AbstractDatabase, l *utils.Logger) {
+func InitialSync(db database.AbstractDatabase, l *utils.Logger) {
 	fmt.Println("Attempting to synchronize...")
 	syncTaskTypes(db, l)
 	syncEmployeesWithPhoto(db, l)
 	fmt.Println("Done")
+}
+
+func ScheduleSync(db database.AbstractDatabase, l *utils.Logger) {
+	for range time.Tick(time.Minute * 1) {
+		fmt.Println("Attempting to synchronize...")
+		syncTaskTypes(db, l)
+		syncEmployeesWithoutPhoto(db, l)
+		fmt.Println("Done")
+	}
 }

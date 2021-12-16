@@ -25,6 +25,7 @@ func main() {
 	logger.CreateLogFile()
 
 	db := database.MemoryDatabase{}
-	w.SyncWrapperAndCache(&db, &logger)
+	w.InitialSync(&db, &logger)
+	go w.ScheduleSync(&db, &logger)
 	setupApiServer(&db, &logger)
 }
