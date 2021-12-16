@@ -29,17 +29,17 @@ func FormatLogMessage(t time.Time, msg string) string {
 }
 
 func CreateLogsFolder() error {
-	fmt.Println("attempting to create logs folder")
+	fmt.Println("Attempting to create logs folder")
 	// os.ModePerm == 0777 (unix permissions for creating directories)
 	err := os.Mkdir("logs", os.ModePerm)
 	if err != nil && !errors.Is(err, os.ErrExist) {
 		fmt.Println(err.Error())
 	} else if err != nil && errors.Is(err, os.ErrExist) {
-		fmt.Println("logs folder already exists")
+		fmt.Println("Logs folder already exists")
 	} else if err == nil {
-		fmt.Println("logs folder created")
+		fmt.Println("Logs folder created")
 	}
-	fmt.Println("done attempting to create logs folder")
+	fmt.Println("Done attempting to create logs folder")
 	return err
 }
 
