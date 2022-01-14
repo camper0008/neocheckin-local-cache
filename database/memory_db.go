@@ -237,8 +237,8 @@ func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string) error {
 	})
 
 	if err == nil {
-		db.options[i] = db.options[len(db.options)-1]
-		db.options = db.options[:len(db.options)-1]
+		db.tasks[i] = db.tasks[len(db.tasks)-1]
+		db.tasks = db.tasks[:len(db.tasks)-1]
 		return nil
 	}
 
