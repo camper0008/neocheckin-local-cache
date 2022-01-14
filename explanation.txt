@@ -1,0 +1,1555 @@
+// Skabt Fredag d. 14 januar, 2022.
+
+// Skaber en ny http request ud fra et endpoint. 
+// Eftersom alle get requests skal sendes til WRAPPER_URL behøver man kun at inkludere et endpoint.
+// Den inkluderer desuden også en "token" header med værdi af WRAPPER_KEY, hvilket er krævet per API dokumentationen.
+func CreateGetRequest(endpoint string) (*http.Request, error) {
+	conf := c.Read()
+
+	req, err := http.NewRequest("GET", conf["WRAPPER_URL"]+endpoint, nil)
+	req.Header.Add("token", conf["WRAPPER_KEY"])
+
+	req.Close = true
+
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// Skaber en ny http request ud fra et endpoint og en Body.
+// Eftersom alle post requests skal sendes til WRAPPER_URL behøver man kun at inkludere et endpoint frem for den fulde URL.
+// Den inkluderer desuden også en "token" header med værdi af WRAPPER_KEY, hvilket er krævet per API dokumentationen.
+func CreatePostRequest(endpoint string, body io.Reader) (*http.Request, error) {
+	conf := c.Read()
+
+	req, err := http.NewRequest("POST", conf["WRAPPER_URL"]+endpoint, body)
+	req.Header.Add("token", conf["WRAPPER_KEY"])
+	req.Header.Add("Content-Type", "application/json")
+
+	req.Close = true
+
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// Datoerne er formateret på denne måde, så de både virker på Windows og Linux
+// Eftersom de hver især har tegn man ikke må bruge i filnavne
+// Desuden er de formateret så at de nyeste altid ville være øverst, frem for hvis vi f.eks. havde dagene først.
+// Den 14. januar 2022, kl 9:56 ville for eksempel være "D2022-01-14_T09-56-00"
+// Hvor "D" står for "DATE" og "T" står for "TIME"
+// Den har taget inspiration fra ISO timestamps, hvor den skal være læselig men nyttig.
+func GetFormattedDate(t time.Time) string {
+	return fmt.Sprintf(
+		"D%0.4d-%0.2d-%0.2d_T%0.2d-%0.2d-%0.2d",
+		t.Year(),
+		t.Month(),
+		t.Day(),
+		t.Hour(),
+		t.Minute(),
+		t.Second(),
+	)
+}
+
+// Denne inkluderer bare en dato i Log beskeden
+// Så:
+// server crashed
+// bliver til
+// D2022-01-14_T09-56-00:
+//     server crashed
+func FormatLogMessage(t time.Time, msg string) string {
+	f := GetFormattedDate(t)
+	return f + ":\n\t" + msg
+}
+
+// Den skaber en folder, til at skrive alle logs i.
+// Hvorfor den bruger 0777 er lidt af et hokus-pokus nummer, der beskriver hvilke tilladelser den skal have.
+// Tror dsv. du skal læse Go dokumentationen hvis du vil sætte dig ind i det.
+// Ellers bare lad vær' med at røre den lol
+func CreateLogsFolder() error {
+	fmt.Println("Attempting to create logs folder")
+	// os.ModePerm == 0777 (unix permissions for creating directories)
+	err := os.Mkdir("logs", os.ModePerm)
+	if err != nil && !errors.Is(err, os.ErrExist) {
+		fmt.Println(err.Error())
+	} else if err != nil && errors.Is(err, os.ErrExist) {
+		fmt.Println("Logs folder already exists")
+	} else if err == nil {
+		fmt.Println("Logs folder created")
+	}
+	fmt.Println("Done attempting to create logs folder")
+	return err
+}
+
+// Skaber en Log fil
+func (l *Logger) CreateLogFile() error {
+	err := CreateLogsFolder()
+	if err != nil && !errors.Is(err, os.ErrExist) {
+		return fmt.Errorf("an error occurred creating logs folder: %v", err)
+
+	}
+	name := GetFormattedDate(time.Now())
+	f, err := os.Create("logs/" + name + ".txt")
+	if err != nil {
+		return fmt.Errorf("an error occurred creating log file: %v", err)
+
+	}
+	f.Close()
+	l.Filename = "logs/" + name + ".txt"
+	return nil
+}
+
+// Formaterer et string med dato, og derefter sætter det ind i log filen.
+// Lidt et resultat af codesplitting.
+func (l *Logger) FormatAndAppendToLogFile(msg string) error {
+	formatted := FormatLogMessage(time.Now(), msg)
+	err := l.AppendToLogFile(formatted)
+	return err
+}
+
+// Åbner filen med O_APPEND og O_WRITEONLY permissions.
+// Derefter skriver den bare beskeden på filen.
+func (l *Logger) AppendToLogFile(msg string) error {
+	if l.Filename == "" {
+		return fmt.Errorf("logger has not been given a filename")
+	}
+	f, wErr := os.OpenFile(l.Filename, os.O_APPEND|os.O_WRONLY, os.ModeAppend)
+	if wErr != nil {
+		return wErr
+	}
+	_, wErr = f.WriteString(msg + "\n\n")
+	return wErr
+}
+
+// Genererer et UUID ved at skabe et ByteArray af en længde på 32 og fylder den med tilfældigt valgte Bytes
+// Da i de fleste ældre sprog er et string bare et CharArray med en null-byte til sidst, kan man bare skabe et string direkte ud fra et CharArray.
+// Chars, for en eller anden grund, kaldes Bytes i Go.
+func GenerateUUID() string {
+	chars := []byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'}
+	uuid := make([]byte, 32)
+	for i := 0; i < 32; i++ {
+		uuid[i] = chars[rand.Intn(len(chars))]
+	}
+	return string(uuid)
+}
+
+// Man kan bruge > operatoren på strings.
+// Tror idéen er at de konverterer det til deres charcode, f.eks. A ville være 65 osv. og derefter er det bare et tal man kan bruge < og > på normalt.
+func CompareString(a string, b string) int {
+	if a > b {
+		return 1
+	} else if a < b {
+		return -1
+	} else {
+		return 0
+	}
+}
+
+// Et struct med de to ting man har brug for for at skulle parse en body med JsonDecode
+type ParseableBody struct {
+	Body   io.ReadCloser
+	Header http.Header
+}
+
+// Target er et interface{} hvilket vil sige ethvert slags struct.
+// OBS: target skal være en pointer, hvis du vil se nogen form for resultater.
+// Da en pointer er også under paraplyen af "interface{}", kunne jeg desværre ikke specificere at det skal være en *interface{}
+// Dette er også lidt et produkt af codesplitting.
+func ParseBody(pb ParseableBody, target interface{}) error {
+	isValidError := isHeaderValid(pb)
+	if isValidError != nil {
+		return isValidError
+	}
+
+	decoderErr := decodeBodyJson(pb, target)
+	if decoderErr != nil {
+		return decoderErr
+	}
+	return nil
+}
+
+// m er et interface{} hvilket vil sige ethvert slags struct.
+// OBS: m skal være en pointer, hvis du vil se nogen form for resultater.
+// Da en pointer er også under paraplyen af "interface{}", kunne jeg desværre ikke specificere at det skal være en *interface{}
+func decodeBodyJson(pb ParseableBody, m interface{}) error {
+	var unmarshalErr *json.UnmarshalTypeError
+	decoder := json.NewDecoder(pb.Body)
+	decoder.DisallowUnknownFields()
+	err := decoder.Decode(&m)
+	if err != nil {
+		if errors.As(err, &unmarshalErr) {
+			return fmt.Errorf("bad request. Wrong Type provided for field %s" + unmarshalErr.Field)
+		} else {
+			return fmt.Errorf("bad request %s", err.Error())
+		}
+	}
+	return nil
+}
+
+// Tjekker bare om Content-Type inkluderer application/json.
+// Content-Type kunne f.eks. også ligne "application/json; charset=UTF-8", så derfor kunne jeg ikke bare direkte se om den er application/json
+func isHeaderValid(pb ParseableBody) error {
+	headerContentType := pb.Header.Get("Content-Type")
+	r := regexp.MustCompile("application/json")
+	if r.FindString(headerContentType) == "" {
+		return fmt.Errorf("invalid content type, got '%s', expected 'application/json'", headerContentType)
+	}
+	return nil
+}
+
+// Skriver en json-encoded response-model til responsewriteren.
+// Desuden inkluderer den også en "400" respons.
+// Slutresultatet ville være dette:
+// { "error": "<error message>" }
+func WriteError(rw http.ResponseWriter, err error) {
+	encoded, err := JsonEncode(rsm.Error{
+		Error: err.Error(),
+	})
+
+	if err == nil {
+		rw.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintf(rw, "%s", encoded)
+		return
+	} else {
+		WriteServerError(rw, err)
+		return
+	}
+}
+
+// Skriver en json-encoded response-model til responsewriteren.
+// Desuden inkluderer den også en "500" respons.
+// Slutresultatet ville være dette:
+// { "error": "<error message>" }
+func WriteServerError(rw http.ResponseWriter, err error) {
+	encoded, err := JsonEncode(rsm.Error{
+		Error: err.Error(),
+	})
+
+	if err == nil {
+		rw.WriteHeader(http.StatusInternalServerError)
+		fmt.Fprintf(rw, "%s", encoded)
+		return
+	} else {
+		rw.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+}
+
+// Funktionen forklarer lidt sigselv.
+// Tager et interface og json-encoder det til et json-string i form af et ByteArray.
+// Den bruger som basis et tag alá `json:"field name"`, hvis det findes. Ellers bruger den bare hvad structet kalder den.
+// F.eks.
+/* 
+type Example struct {
+    FieldNameA: string `json:"notFieldName",
+    FieldNameB: string,
+}
+
+Example {
+    FieldNameA: "besked A",
+    FieldNameB: "besked B",
+}
+*/
+// Ville have et json string der ligner dette:
+/*
+{
+    "notFieldName": "besked a",
+    "FieldNameB": "besked b",
+}
+*/
+func JsonEncode(s interface{}) ([]byte, error) {
+	b, err := json.Marshal(s)
+
+	if err != nil {
+		return b, fmt.Errorf("could not encode to json: '%s'", err.Error())
+	}
+
+	return b, nil
+}
+
+// Codesplitting
+// Skaber en router med funktion fra 'router' package
+// sætter at http skal lytte på ruten "/", hvilket finder alting efter "/" også, hvis den ikke fandt noget specificeret på forhånd.
+// Derefter kører den router's funktion til at håndtere det.
+// Derefter siger den at http skal lytte på port 5000.
+// Siden database.AbstractDatabase er et interface, kunne jeg ikke specificere at det burde være et *database.AbstractDatabase, men det skal det.
+func setupApiServer(db database.AbstractDatabase, l *utils.Logger) {
+	router := router.ConnectAPI(db)
+	http.HandleFunc("/", func(rw http.ResponseWriter, r *http.Request) {
+		router.Handle(rw, *r, db, l)
+	})
+	err := http.ListenAndServe(":5000", nil)
+	if err != nil {
+		log.Fatalln(err)
+	}
+}
+
+// Håndterer bare opstart.
+// Siden database.AbstractDatabase er et interface, kunne jeg ikke specificere at det burde være et *database.AbstractDatabase, men det skal det.
+func main() {
+	logger := utils.Logger{}
+	logger.CreateLogFile()
+
+	db := database.MemoryDatabase{}
+	w.InitialSync(&db, &logger)
+	go w.ScheduleSync(&db, &logger)
+	setupApiServer(&db, &logger)
+}
+
+// Codesplitting.
+// Konverter et exported model til et request model.
+func convertTaskToRequest(t em.Task) rqm.AddTask {
+	return rqm.AddTask{
+		Name:         t.Name,
+		TaskId:       t.TaskId,
+		EmployeeRfid: t.EmployeeRfid,
+		PostKey:      t.PostKey,
+		SystemId:     t.SystemId,
+		Timestamp:    t.Timestamp,
+	}
+}
+
+// Sender alle tasks gemt i DBen.
+// De bliver kun gemt i DBen hvis de får en fejl respons fra serveren (en statuskode >=400)
+func sendQueuedTasks(db dbt.AbstractDatabase, pk string, l *utils.Logger) {
+	t, err := db.GetAllTasks()
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error getting all tasks: %q", err.Error()))
+		return
+	}
+	for i := 0; i < len(t); i++ {
+		status, err := SendTask(em.Task{
+			TaskId:       t[i].TaskId,
+			Name:         t[i].Name,
+			EmployeeRfid: t[i].EmployeeRfid,
+			PostKey:      pk,
+			SystemId:     t[i].SystemId,
+			Timestamp:    t[i].Timestamp,
+		}, db, l, true)
+		if status == http.StatusOK && err == nil {
+			err := db.DeleteTaskWithDatabaseId(t[i].DatabaseId)
+			if err != nil {
+				l.FormatAndAppendToLogFile(fmt.Sprintf("error deleting queued task: %q", err.Error()))
+				continue
+			}
+		}
+	}
+}
+
+// Sender en task til wrapper serveren
+// Queued er fra sendQueuedTasks funktionen, så der ikke kommer et uendeligt loop.
+// Den her del er lidt spaghetti, jeg har bare ikke taget mig sammen til at skulle refactor den.
+func SendTask(t em.Task, db dbt.AbstractDatabase, l *utils.Logger, queued bool) (int, error) {
+
+	req, err := createRequestWithBody(t)
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to create request for task (rfid: %s, timestamp: %s, taskid: %d) with body: %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
+		return http.StatusInternalServerError, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		addTaskToQueue(db, t, l)
+		l.FormatAndAppendToLogFile(fmt.Sprintf("unable to send request for task (rfid: %s, timestamp: %s, taskid: %d): %q", t.EmployeeRfid, t.Timestamp, t.TaskId, err.Error()))
+		return http.StatusInternalServerError, err
+	}
+
+	defer resp.Body.Close()
+
+	if resp.StatusCode >= 400 {
+		message, parseError := getResponseErrorMessage(resp, queued, db, t, l)
+		if parseError != nil {
+			return http.StatusInternalServerError, parseError
+		} else {
+			l.FormatAndAppendToLogFile(fmt.Sprintf("got a status code >400 for task (rfid: %s, timestamp: %s, taskid: %d) from wrapper with message %q", t.EmployeeRfid, t.Timestamp, t.TaskId, message))
+		}
+
+		if resp.StatusCode == http.StatusInternalServerError && !queued {
+			addTaskToQueue(db, t, l)
+		}
+
+		return resp.StatusCode, nil
+	}
+
+	if resp.StatusCode == http.StatusOK && err == nil && !queued {
+		sendQueuedTasks(db, t.PostKey, l)
+	}
+
+	return http.StatusOK, nil
+}
+
+// Konverterer et exported model til et databasemodel så den kan gemmes.
+// Derefter gemmer den i databasen.
+// Denne funktion bruges når der skete en fejl i at sende exported model til wrapperen.
+func addTaskToQueue(db dbt.AbstractDatabase, t em.Task, l *utils.Logger) {
+	err := db.InsertTask(dbm.Task{
+		TaskId:       t.TaskId,
+		Name:         t.Name,
+		EmployeeRfid: t.EmployeeRfid,
+		SystemId:     t.SystemId,
+		Timestamp:    t.Timestamp,
+	})
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error adding task to queue: %q", err.Error()))
+	}
+}
+
+// F.eks. hvis serveren returnerer { "error": "missing token" }, skal denne funktion hive det ud.
+// Jeg ved ikke hvorfor den tager alle de parametre, der ligner vist generelt bare en fejl jeg har lavet pga. manglende søvn.
+func getResponseErrorMessage(resp *http.Response, queued bool, db dbt.AbstractDatabase, t em.Task, l *utils.Logger) (string, error) {
+	parsedError, errorDuringParsing := parseResponseError(resp)
+	if errorDuringParsing != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred during parsing response: %q", errorDuringParsing.Error()))
+		return "", errorDuringParsing
+	}
+
+	return parsedError.Error, nil
+}
+
+// Codesplitting
+// Denne funktion dekoder rent faktisk responsen.
+func parseResponseError(resp *http.Response) (rsm.Error, error) {
+	rErr := rsm.Error{}
+	pErr := utils.ParseBody(utils.ParseableBody{Body: resp.Body, Header: resp.Header}, &rErr)
+	if pErr != nil {
+		return rsm.Error{}, pErr
+	}
+	return rErr, nil
+}
+
+// Privat! funktion til at skabe en /tasks/add" request ud fra en task.
+// Denne funktion burde **virkelig** have et bedre navn, det har jeg bare ikke haft tid til at gøre.
+func createRequestWithBody(t em.Task) (*http.Request, error) {
+	enc, err := utils.JsonEncode(convertTaskToRequest(t))
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := utils.CreatePostRequest("/tasks/add", strings.NewReader(string(enc)))
+	if err != nil {
+		return nil, err
+	}
+	return req, nil
+}
+
+// Lang funktion til at få task types fra wrapper serveren.
+// Kig evt. på API'en.
+func GetTaskTypes(l *utils.Logger) (rm.GetTaskTypes, error) {
+	req, err := utils.CreateGetRequest("/tasks/types")
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred creating request: %q", err.Error()))
+		return rm.GetTaskTypes{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred doing request: %q", err.Error()))
+		return rm.GetTaskTypes{}, err
+	}
+
+	defer resp.Body.Close()
+
+	parsed := rm.GetTaskTypes{}
+	err = utils.ParseBody(utils.ParseableBody{
+		Body:   resp.Body,
+		Header: resp.Header,
+	}, &parsed)
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred parsing request body: %q", err.Error()))
+		return rm.GetTaskTypes{}, err
+	}
+
+	return parsed, nil
+}
+
+// Response Model til Database Model
+// Konverterer bare responsen til Options, da det er det frontend og local cache kalder dem.
+// Denne "inconsistency" er fra da personen der skrev wrapper serveren skrev wrapper serveren havde planer om at håndtere tasks anderledes.
+// Jeg ved ikke lige hvad han tænkte, og hvad jeg tænkte i at godkende det.
+func taskTypesResponseToDbModels(r rm.GetTaskTypes) []dbm.Option {
+	data := r.Data
+	res := make([]dbm.Option, len(data))
+	for i := 0; i < len(data); i++ {
+		res[i] = taskTypeToDatabaseOption(data[i])
+	}
+	return res
+}
+
+// Forklarer sigselv.
+// Produkt af codesplitting.
+func updateDbFromTaskTypesResponse(db dbt.AbstractDatabase, r rm.GetTaskTypes) error {
+	o := taskTypesResponseToDbModels(r)
+	err := db.ReplaceOptions(o)
+	return err
+}
+
+// Forklarer sigselv.
+func taskTypeToDatabaseOption(t im.TaskType) dbm.Option {
+	return dbm.Option{
+		WrapperId:   t.Id,
+		Name:        t.Name,
+		DisplayName: t.DisplayName,
+		Priority:    t.Priority,
+		Locations:   t.Locations,
+		Category:    t.Category,
+		Schedule: dbm.Schedule{
+			From: dbm.ScheduleTime{
+				Second: t.Schedule.From.Second,
+				Minute: t.Schedule.From.Minute,
+				Hour:   t.Schedule.From.Hour,
+			},
+			To: dbm.ScheduleTime{
+				Second: t.Schedule.To.Second,
+				Minute: t.Schedule.To.Minute,
+				Hour:   t.Schedule.To.Hour,
+			},
+			Days: dbm.ScheduleDays{
+				Monday:    t.Schedule.Days.Monday,
+				Tuesday:   t.Schedule.Days.Tuesday,
+				Wednesday: t.Schedule.Days.Wednesday,
+				Thursday:  t.Schedule.Days.Thursday,
+				Friday:    t.Schedule.Days.Friday,
+				Saturday:  t.Schedule.Days.Saturday,
+				Sunday:    t.Schedule.Days.Sunday,
+			},
+		},
+	}
+}
+
+// Får alt employee data bortset fra deres fotos.
+// Det er fordi at fotos er rigtig meget data i forhold til bare navn og status.
+// Vi syncer derfor med fotos ved opstart og får ny data uden fotos.
+// Om dette så skaber et problem med nye elever, der ville mangle fotos, har jeg ingen idé om.
+func getEmployeesWithoutPhoto(l *utils.Logger) (rm.GetEmployeesSync, error) {
+	req, err := utils.CreateGetRequest("/employees/sync")
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred creating request: %q", err.Error()))
+		return rm.GetEmployeesSync{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		l.FormatAndAppendToLogFile(
+			fmt.Sprintf(
+				"error occurred doing request: %q",
+				err.Error(),
+			),
+		)
+		return rm.GetEmployeesSync{}, err
+	}
+
+	defer resp.Body.Close()
+
+	parsed := rm.GetEmployeesSync{}
+	err = utils.ParseBody(utils.ParseableBody{
+		Body:   resp.Body,
+		Header: resp.Header,
+	}, &parsed)
+	if err != nil {
+		l.FormatAndAppendToLogFile(
+			fmt.Sprintf(
+				"error occurred parsing request body: %q",
+				err.Error(),
+			),
+		)
+		return rm.GetEmployeesSync{}, err
+	}
+
+	return parsed, nil
+}
+
+// Får alt employee data inklusiv deres fotos.
+// Det er fordi at fotos er rigtig meget data i forhold til bare navn og status.
+// Vi syncer derfor med fotos ved opstart og får ny data uden fotos.
+// Om dette så skaber et problem med nye elever, der ville mangle fotos, har jeg ingen idé om.
+func getEmployeesWithPhoto(l *utils.Logger) (rm.GetEmployees, error) {
+	req, err := utils.CreateGetRequest("/employees/all")
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred creating request: %q", err.Error()))
+		return rm.GetEmployees{}, err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred doing request: %q", err.Error()))
+		return rm.GetEmployees{}, err
+	}
+
+	defer resp.Body.Close()
+
+	parsed := rm.GetEmployees{}
+	err = utils.ParseBody(utils.ParseableBody{
+		Body:   resp.Body,
+		Header: resp.Header,
+	}, &parsed)
+	if err != nil {
+		l.FormatAndAppendToLogFile(fmt.Sprintf("error occurred parsing request body: %q", err.Error()))
+		return rm.GetEmployees{}, err
+	}
+
+	return parsed, nil
+}
+
+// Forklarer sigselv.
+func employeeToDatabaseEmployee(e im.Employee) dbm.Employee {
+	return dbm.Employee{
+		WrapperId:  e.WrapperId,
+		Rfid:       e.Rfid,
+		Name:       e.Name,
+		Flex:       e.Flex,
+		Working:    e.Working,
+		Department: e.Department,
+		Photo:      e.Photo,
+	}
+}
+
+// Forklarer sigselv.
+func allEmployeesResponseToDbModels(r rm.GetEmployees) []dbm.Employee {
+	data := r.Data
+	res := make([]dbm.Employee, len(data))
+	for i := 0; i < len(data); i++ {
+		res[i] = employeeToDatabaseEmployee(data[i])
+	}
+	return res
+}
+
+// For at sætte et foto og database id samt det nye data på en importeret employee.
+// Eftersom ved Sync funktionen inkluderer den ikke photo, da det er unødvendig data.
+// Desuden at vi ikke ved hvad DatabaseId er, fordi det er noget der unikt til Cache lageret og ikke relevant til wrapperen.
+func getSyncedDatabaseEmployee(sync im.EmployeeSync, db dbt.AbstractDatabase) (dbm.Employee, error) {
+	empl, err := db.GetEmployeeWithRfid(sync.Rfid)
+	if err != nil {
+		return empl, err
+	}
+	syncedEmpl := dbm.Employee{
+		DatabaseId: empl.DatabaseId,
+		Photo:      empl.Photo,
+		WrapperId:  sync.WrapperId,
+		Name:       sync.Name,
+		Department: sync.Department,
+		Working:    sync.Working,
+		Flex:       sync.Flex,
+		Rfid:       sync.Rfid,
+	}
+	return syncedEmpl, nil
+}
+
+// Går i gennem hver employee og konverterer dem til en database employee med foto osv.
+// Da der i teori kan gå noget galt hver gang de skal konverte, samler den også en liste af alle fejl.
+func syncEmployeesResponseToDbModels(db dbt.AbstractDatabase, r rm.GetEmployeesSync) ([]dbm.Employee, []error) {
+	data := r.Data
+	res := make([]dbm.Employee, len(data))
+	errors := make([]error, len(data))
+	for i := 0; i < len(data); i++ {
+		syncedEmpl, err := getSyncedDatabaseEmployee(data[i], db)
+		if err != nil {
+			res[i] = dbm.Employee{}
+			errors[i] = err
+		} else {
+			res[i] = syncedEmpl
+			errors[i] = nil
+		}
+	}
+
+	return res, errors
+}
+
+// Codesplitting.
+func updateDbFromSyncEmployeesResponse(db dbt.AbstractDatabase, r rm.GetEmployeesSync) []error {
+	syncedEmployees, errors := syncEmployeesResponseToDbModels(db, r)
+	for i := 0; i < len(syncedEmployees); i++ {
+		if errors[i] == nil {
+			db.UpdateEmployeeWithDatabaseId(syncedEmployees[i].DatabaseId, syncedEmployees[i])
+		}
+	}
+	return errors
+}
+
+// Typisk brugt når local cache først starter, da DB er tom, kan man bare erstatte alle nuværende employees med de nye employees.
+func updateDbFromAllEmployeesResponse(db dbt.AbstractDatabase, r rm.GetEmployees) error {
+	e := allEmployeesResponseToDbModels(r)
+	err := db.ReplaceEmployees(e)
+	return err
+}
+
+// Henter task types fra wrapperen og erstatter alle nuværende task types.
+func syncTaskTypes(db database.AbstractDatabase, l *utils.Logger) {
+	t, err := GetTaskTypes(l)
+	if err != nil {
+		fmt.Printf("Error synchronizing task types: %v\n", err)
+		l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing task types: %v", err))
+	} else {
+		err = updateDbFromTaskTypesResponse(db, t)
+		if err != nil {
+			fmt.Printf("Error synchronizing task types: %v\n", err)
+			l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing task types: %v", err))
+		}
+	}
+}
+
+// Henter employees uden fotos, da det er mindre data der behøves at sende over.
+// Derfor kan man også nemt gøre det oftere.
+func syncEmployeesWithoutPhoto(db database.AbstractDatabase, l *utils.Logger) {
+	e, err := getEmployeesWithoutPhoto(l)
+	if err != nil {
+		fmt.Printf("Error synchronizing employees: %v\n", err)
+		l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing employees: %v", err))
+	} else {
+		errors := updateDbFromSyncEmployeesResponse(db, e)
+		for i := 0; i < len(errors); i++ {
+			if errors[i] != nil {
+				fmt.Printf("Error synchronizing employees without photo: %v\n", errors[i])
+				l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing employees without photo: %v", errors[i]))
+			}
+		}
+	}
+}
+
+// Henter employees fra wrapperen og erstatter dem, samt håndterer fejl.
+func syncEmployeesWithPhoto(db database.AbstractDatabase, l *utils.Logger) {
+	e, err := getEmployeesWithPhoto(l)
+	if err != nil {
+		fmt.Printf("Error synchronizing employees: %v\n", err)
+		l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing employees: %v", err))
+	} else {
+		err = updateDbFromAllEmployeesResponse(db, e)
+		if err != nil {
+			fmt.Printf("Error synchronizing employees: %v\n", err)
+			l.FormatAndAppendToLogFile(fmt.Sprintf("Error synchronizing employees: %v", err))
+		}
+	}
+}
+
+// Det første synchronization med db.
+// De tager derfor også fotos med osv.
+func InitialSync(db database.AbstractDatabase, l *utils.Logger) {
+	fmt.Println("Attempting to synchronize...")
+	syncTaskTypes(db, l)
+	syncEmployeesWithPhoto(db, l)
+	fmt.Println("Done")
+}
+
+// Fremtidige synchronization med db.
+// De tager derfor ikke fotos med osv, da de ikke ændrer sig specielt ofte og er meget data man skal hente.
+func ScheduleSync(db database.AbstractDatabase, l *utils.Logger) {
+	for range time.Tick(time.Minute * 1) {
+		fmt.Println("Attempting to synchronize...")
+		syncTaskTypes(db, l)
+		syncEmployeesWithoutPhoto(db, l)
+		fmt.Println("Done")
+	}
+}
+
+// Læser settings.conf og henter alt data fra den.
+func Read() map[string]string {
+	parsed := map[string]string{}
+
+	content, err := ioutil.ReadFile("config/settings.conf")
+	if err != nil {
+		log.Fatal("Unable to read 'config/settings.conf':", err)
+	}
+	ParseContent(content, parsed)
+
+	return parsed
+}
+
+// Parser settings.conf til at hente alle key, value par.
+// Codesplitting
+func ParseContent(content []byte, r map[string]string) {
+	lines := strings.Split(string(content), "\n")
+	for i := 0; i < len(lines); i++ {
+		ParseConfLineWithRegex(lines[i], r)
+	}
+}
+
+// Parser én linje, ved brug af Regex
+func ParseConfLineWithRegex(line string, r map[string]string) {
+	exp := confParserRegex()
+	if exp.MatchString(line) {
+		k, v := "", ""
+		matches := exp.FindStringSubmatch(line)
+		if matches[1] != "" {
+			k = matches[1]
+			v = getValueFromMatches(matches)
+		}
+		if k != "" && v != "" {
+			r[k] = v
+		}
+	}
+}
+
+// se også: confParserRegex
+func getValueFromMatches(matches []string) string {
+	if matches[2] != "" {
+		// double quotes
+		return matches[2]
+	} else if matches[3] != "" {
+		// single quotes
+		return matches[3]
+	} else if matches[4] != "" {
+		// no quotes
+		return matches[4]
+	}
+	return ""
+}
+
+// En funktion til at hente confParserRegex
+// Den er lidt hokus pokus hvis man ikke er vant til regex, derfor har jeg lavet det til dens egen funktion for at forklare den.
+func confParserRegex() *regexp.Regexp {
+	// ^[\s]*			: make sure that whitespace in front of string isnt matched as part of key
+	// ([^\s#]+)		: match the key which isnt whitespace or # (comment)
+	// =				: an equal sign
+	// (?:				: non-capturing group, to match with the OR correctly
+	// "([^"]+)"		: capture anything that isnt a " character, that's surrounded by quotes
+	// |				: "OR" - try above first OR if unmatched, instead match below
+	// '([^']+)'		: capture anything that isnt a ' character, that's surrounded by quotes
+	// |				: "OR" - try above first OR if unmatched, instead match below
+	// ([^\s#]+)		: capture anything that isnt whitespace or a # (comment)
+	// )				: end non-capturing group
+	exp := regexp.MustCompile(`^[\s]*([^\s#]+)=(?:"([^"]+)"|'([^']+)'|([^\s#]+))`)
+	return exp
+}
+
+// Tjek om de to options er de samme.
+// Hvis de er de samme, er der jo ingen grund til at opdatere DBen.
+func convertedOptionIsEqual(o1 []em.Option, o2 []em.Option) bool {
+	if len(o1) != len(o2) {
+		return false
+	}
+	for i := 0; i < len(o1); i++ {
+		if o1[i] != o2[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+// Valider om en API request er OK, ellers returner en liste af de fields der mangler.
+func validatePostEmployeeCardscanEndpointInput(rw http.ResponseWriter, p rqm.CardScanned) error {
+	missing := []string{}
+	if p.ApiKey == "" {
+		missing = append(missing, "apiKey")
+	}
+	if p.EmployeeRfid == "" {
+		missing = append(missing, "employeeRfid")
+	}
+	if p.SystemId == "" {
+		missing = append(missing, "systemId")
+	}
+	if p.Timestamp == "" {
+		missing = append(missing, "timestamp")
+	}
+	if len(missing) == 0 {
+		return nil
+	} else {
+		return fmt.Errorf("missing fields: %v", missing)
+	}
+}
+
+// Spaghetti, har ikke fået taget mig sammen til at refactor.
+// Som funktionnavnet dog forklarer, håndterer den requests til POST /employee/cardscan
+// Det vil sige at den parser request body, validerer, tjekker folk ind/ud lokalt og derefter sender det videre til wrapperen.
+func PostEmployeeCardscanEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+	var p rqm.CardScanned
+	err := utils.ParseBody(utils.ParseableBody{Body: rq.Body, Header: rq.Header}, &p)
+
+	if err != nil {
+		utils.WriteError(rw, err)
+		return
+	}
+
+	if err := validatePostEmployeeCardscanEndpointInput(rw, p); err != nil {
+		utils.WriteError(rw, err)
+		return
+	}
+
+	empl, err := db.GetEmployeeWithRfid(p.EmployeeRfid)
+
+	if err == nil {
+		o, err := db.GetOptionWithWrapperId(p.Option)
+
+		if err != nil {
+			utils.WriteServerError(rw, err)
+			return
+		}
+
+		if o.Category == "check in" {
+			empl.Working = true
+		} else if o.Category == "check out" {
+			empl.Working = false
+		}
+
+		db.UpdateEmployeeWithDatabaseId(empl.DatabaseId, dbm.Employee{
+			WrapperId:  empl.WrapperId,
+			Rfid:       empl.Rfid,
+			Name:       empl.Name,
+			Flex:       empl.Flex,
+			Working:    empl.Working,
+			Department: empl.Department,
+			Photo:      empl.Photo,
+		})
+
+		statusCode, err := wr.SendTask(wem.Task{
+			TaskId:       p.Option,
+			Name:         "Scan Card: " + p.Name,
+			EmployeeRfid: p.EmployeeRfid,
+			PostKey:      p.ApiKey,
+			SystemId:     p.SystemId,
+			Timestamp:    p.Timestamp,
+		}, db, l, false)
+
+		if err != nil {
+			if statusCode == http.StatusBadRequest {
+				utils.WriteError(rw, err)
+			} else if statusCode == http.StatusInternalServerError {
+				utils.WriteServerError(rw, err)
+			}
+			return
+		}
+
+		encoded, err := utils.JsonEncode(rsm.GetEmployee{
+			Employee: em.Employee{
+				Name:       empl.Name,
+				Flex:       empl.Flex,
+				Working:    empl.Working,
+				Department: empl.Department,
+				Photo:      empl.Photo,
+			},
+		})
+
+		if err == nil {
+			fmt.Fprintf(rw, "%s", encoded)
+			return
+		} else {
+			utils.WriteServerError(rw, err)
+			return
+		}
+	} else {
+		utils.WriteError(rw, err)
+	}
+}
+
+// med en URL path af "/api/employee/:rfid" skal den kunne finde ":rfid"
+// Den genstarter derfor hver gang den finder et "/" i URLen.
+func getRfidFromPath(p string) string {
+	i := 0
+	a := make([]byte, len(p))
+	for c := range p {
+		a[c-i] = p[c]
+		if p[c] == '/' {
+			i = c + 1
+			a = make([]byte, len(p)-i)
+		}
+	}
+
+	return string(a)
+}
+
+// Håndterer GET /api/employee/:rfid requests
+// Den tillægger "charset=utf-8" i dens respons, eftersom den ellers bruger ASCII hvilket ikke inkluderer æøå.
+func GetEmployeeFromRfidEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+	p := rq.URL.Path
+	rfid := getRfidFromPath(p)
+
+	empl, err := GetEmployeeFromRfid(db, rfid)
+
+	if err == nil {
+		encoded, err := utils.JsonEncode(rsm.GetEmployee{
+			Employee: em.Employee{
+				Name:       empl.Name,
+				Flex:       empl.Flex,
+				Working:    empl.Working,
+				Department: empl.Department,
+				Photo:      empl.Photo,
+			},
+		})
+
+		if err == nil {
+			fmt.Fprintf(rw, "%s", encoded)
+			return
+		} else {
+			utils.WriteServerError(rw, err)
+			return
+		}
+	} else {
+		utils.WriteError(rw, err)
+	}
+}
+
+// Det her var for at kunne hive den ud i en funktion for at kunne teste den.
+// Det tester dog egentligt nærmest bare om db.GetEmployeeWithRfid virker, hvilket allerede er testet.
+func GetEmployeeFromRfid(db dbt.AbstractDatabase, rfid string) (m.Employee, error) {
+	empl, err := db.GetEmployeeWithRfid(rfid)
+	if err != nil {
+		return m.Employee{}, fmt.Errorf("not found")
+	}
+	return empl, nil
+}
+
+// Håndterer GET /api/employee/working requests
+func GetEmployeesWorkingEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+	w, err := GetEmployeesWorking(db)
+
+	if err == nil {
+		encoded, err := utils.JsonEncode(w)
+
+		if err == nil {
+			fmt.Fprintf(rw, "%s", encoded)
+			return
+		} else {
+			utils.WriteServerError(rw, err)
+			return
+		}
+	} else {
+		utils.WriteError(rw, err)
+	}
+}
+
+// Håndterer GET /api/employee/working requests
+func GetEmployeesWorking(db dbt.AbstractDatabase) (rsm.WorkingEmployees, error) {
+	dbE, err := db.GetAllEmployees()
+	if err != nil {
+		return rsm.WorkingEmployees{}, err
+	}
+
+	// TODO: sort alphabetically
+
+	e, o := getUnorderedAndOrderedEmployees(dbE)
+
+	return rsm.WorkingEmployees{
+		Employees: e,
+		Ordered:   o,
+	}, nil
+}
+
+// Unordered er bare en liste af alle employees
+// Ordered er et map af employees, opdelt ud fra deres Department
+// f.eks. Viborg og Skive.
+func getUnorderedAndOrderedEmployees(dbE []models.Employee) ([]em.Employee, map[string][]em.Employee) {
+	e := []em.Employee{}
+	o := map[string][]em.Employee{}
+
+	for i := range dbE {
+		if dbE[i].Working {
+			convE := convertDBModelToExportedModel(dbE[i])
+			e = append(e, convE)
+			if o[convE.Department] == nil {
+				o[convE.Department] = []em.Employee{}
+			}
+			o[convE.Department] = append(o[convE.Department], convE)
+		}
+	}
+	SortWorkingEmployees(o)
+	return e, o
+}
+
+// Codesplitting
+func SortWorkingEmployees(o map[string][]em.Employee) {
+	for _, v := range o {
+		sortEmployees(v)
+	}
+}
+
+// Mindes dette er en simpel bubble sort med O(2^n) kompleksitet.
+// Dvs. den er ikke specielt effektiv, men det behøver den heller ikke at være.
+func sortEmployees(v []em.Employee) {
+	for i := 0; i < len(v)-1; i++ {
+		for j := i; j < len(v)-1; j++ {
+			if utils.CompareString(v[j].Name, v[j+1].Name) > 0 {
+				temp := v[j]
+				v[j] = v[j+1]
+				v[j+1] = temp
+			}
+		}
+	}
+}
+
+// Selv forklarende.
+func convertDBModelToExportedModel(e models.Employee) em.Employee {
+	genE := em.Employee{
+		Name:       e.Name,
+		Flex:       e.Flex,
+		Working:    e.Working,
+		Department: e.Department,
+		Photo:      e.Photo,
+	}
+	return genE
+}
+
+// Håndterer GET /api/options requests
+func GetOptionsEndpoint(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
+	rw.Header().Add("Content-Type", "application/json; charset=utf-8")
+
+	dbO, err := db.GetAllOptions()
+	if err != nil {
+		utils.WriteServerError(rw, err)
+		return
+	}
+	converted := ConvertOptionsToExportedModels(dbO)
+
+	encoded, err := utils.JsonEncode(rsm.Options{
+		Options: converted,
+	})
+
+	if err == nil {
+		fmt.Fprintf(rw, "%s", encoded)
+		return
+	} else {
+		utils.WriteServerError(rw, err)
+		return
+	}
+}
+
+// eftersom man ikke direkte kan omdanne en dbm.ScheduleDays værdi til en time.Weekday værdi, skal man gøre noget ála det her i stedet.
+func optionIsDuringWeekday(d dbm.ScheduleDays, w time.Weekday) bool {
+	switch w {
+	case time.Monday:
+		return d.Monday
+	case time.Tuesday:
+		return d.Tuesday
+	case time.Wednesday:
+		return d.Wednesday
+	case time.Thursday:
+		return d.Thursday
+	case time.Friday:
+		return d.Friday
+	case time.Saturday:
+		return d.Saturday
+	case time.Sunday:
+		return d.Sunday
+	default:
+		return false
+	}
+}
+
+// Da scheduleTime er i sekunder/minutter/timer for at være mere menneskeligt læseligt, omdanner vi det til sekunder så de er nemmere at lave matematik osv. på.
+func scheduleTimeToSeconds(s dbm.ScheduleTime) int {
+	return s.Second + s.Minute*60 + s.Hour*60*60
+}
+
+// Tjekker om nuværende tidspunkt er indenfor ScheduleTime fra en Option
+// Den tjekker desuden også en Location parameter, som er fra en feature der blev dropped, men måske kunne bruges i fremtiden.
+func OptionIsAvailable(o dbm.Option) bool {
+	if len(o.Locations) != 0 {
+		conf := c.Read()
+		loc := conf["LOCATION"]
+		for i := 0; i < len(o.Locations); i++ {
+			if loc == o.Locations[i] {
+				return true
+			}
+		}
+		return false
+	}
+
+	t := time.Now()
+	w := t.Weekday()
+	if optionIsDuringWeekday(o.Schedule.Days, w) {
+		h, m, s := t.Clock()
+		tS := s + m*60 + h*60*60
+		frS := scheduleTimeToSeconds(o.Schedule.From)
+		toS := scheduleTimeToSeconds(o.Schedule.To)
+
+		return frS <= tS && tS <= toS
+	}
+	return false
+}
+
+// Tager et database model og finder ud af hvilken slags option den er (NOT_AVAILABLE, AVAILABLE, PRIORITY) og returnerer et exported model ud fra det
+// Navnene er egentligt bare ud fra API specs, men på frontend håndteres PRIORITY typisk som, at den er usynlig og altid valgt, AVAILABLE er en knap man skal aktivt trykke på, og NOT_AVAILABLE ikke kan vælges.
+func ConvertOptionsToExportedModels(d []dbm.Option) []em.Option {
+	r := make([]em.Option, len(d))
+	for i := 0; i < len(d); i++ {
+		a := OptionIsAvailable(d[i])
+
+		oa := em.OptionAvailable(em.NOT_AVAILABLE)
+		if a && d[i].Priority {
+			oa = em.OptionAvailable(em.PRIORITY)
+		} else if a {
+			oa = em.OptionAvailable(em.AVAILABLE)
+		}
+
+		r[i] = em.Option{
+			Id:          d[i].WrapperId,
+			Name:        d[i].Name,
+			DisplayName: d[i].DisplayName,
+			Available:   oa,
+			Category:    d[i].Category,
+		}
+	}
+
+	return r
+}
+
+// Forklarer sigselv.
+func (r *Router) Register(e Endpoint) {
+	r.endpoints = append(r.endpoints, e)
+}
+
+// Når der kommer en request, sendes den videre til routeren's .handle funktion.
+// Den kører igennem alle de endpoints, der findes på routeren, og ser om deres endpoint matcher, i f.eks. METHOD, PATH, etc.
+// Derefter kører den dets handle funktion, f.eks. GetEmployeesWorkingEndpoint.
+func (r *Router) Handle(rw http.ResponseWriter, rq http.Request, db dbt.AbstractDatabase, l *utils.Logger) {
+	for i := range r.endpoints {
+		if endpointMatches(rq.URL.Path, rq.Method, r.Path+r.endpoints[i].Path, r.endpoints[i].Method) {
+			r.endpoints[i].Handler(rw, rq, db, l)
+		}
+	}
+}
+
+// Regex der tjekker om request url, fra start til slut, matcher et router endpoint's url
+// tjekker derudover også dets METHOD, e.g. POST, GET, osv.
+func endpointMatches(rqPath string, rqMethod string, rtPath string, rtMethod string) bool {
+	reP := regexp.MustCompile("^" + rtPath + "$")
+	return (reP.FindString(rqPath) != "" && rqMethod == rtMethod)
+}
+
+// Tjekker om headeren har en valid Token header
+// Local Cache har dets eget GET token.
+// Alle post requests på cache sendes videre til wrapperen, så derfor har frontenden kun brug for wrapperen's post key og cachen's get token.
+// Derfor har cachen heller ikke en post token; den ville ikke gøre specielt meget forskel i længden. Hvis de kunne få fat i wrapperen's post key, kunne de sikkert sagtens få fat i cachen's post key.
+// Eller bare direkte sende til Wrapperen.
+func HeaderIsValid(h http.Header) bool {
+	conf := c.Read()
+	token := h.Get("Token")
+
+	return token == conf["CACHE_GET_KEY"]
+}
+
+// Skaber en router og Skaber en router og forbinder alle endpoints ud fra API specs.
+// Path fungererer også som et regex.
+func ConnectAPI(db dbt.AbstractDatabase) Router {
+	router := Router{
+		Path: "/api",
+	}
+
+	router.Register(Endpoint{
+		Path:    `/employee/cardscanned`,
+		Method:  "POST",
+		Handler: api.PostEmployeeCardscanEndpoint,
+	})
+	router.Register(Endpoint{
+		Path:    `/employees/working`,
+		Method:  "GET",
+		Handler: api.GetEmployeesWorkingEndpoint,
+	})
+	router.Register(Endpoint{
+		Path:    `/employee/[^\\]+`,
+		Method:  "GET",
+		Handler: api.GetEmployeeFromRfidEndpoint,
+	})
+	router.Register(Endpoint{
+		Path:    "/options",
+		Method:  "GET",
+		Handler: api.GetOptionsEndpoint,
+	})
+
+	return router
+}
+
+// En database der gemmer alting i Memory, frem for f.eks. med filesystem eller med en cloud database som MongoDb.
+type MemoryDatabase struct {
+	employees []m.Employee
+	options   []m.Option
+	tasks     []m.Task
+}
+
+// Hjælpefunktion.
+// Lidt alá en "filter" funktion; tager en funktion der returnerer et bool, hvis det bool er sandt, så returnerer den.
+func findEmployee(a []m.Employee, f func(m.Employee) bool) (int, *m.Employee, error) {
+	for i, v := range a {
+		if f(v) {
+			return i, &v, nil
+		}
+	}
+	return -1, nil, fmt.Errorf("employee not found")
+}
+
+// Hjælpefunktion.
+// Lidt alá en "filter" funktion; tager en funktion der returnerer et bool, hvis det bool er sandt, så returnerer den.
+func findOption(a []m.Option, f func(m.Option) bool) (int, *m.Option, error) {
+	for i, v := range a {
+		if f(v) {
+			return i, &v, nil
+		}
+	}
+	return -1, nil, fmt.Errorf("option not found")
+}
+
+// Hjælpefunktion.
+// Lidt alá en "filter" funktion; tager en funktion der returnerer et bool, hvis det bool er sandt, så returnerer den.
+func findTask(a []m.Task, f func(m.Task) bool) (int, *m.Task, error) {
+	for i, v := range a {
+		if f(v) {
+			return i, &v, nil
+		}
+	}
+	return -1, nil, fmt.Errorf("task not found")
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) GetEmployeeWithRfid(rfid string) (m.Employee, error) {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
+		return e.Rfid == rfid
+	})
+
+	if err == nil {
+		return *empl, nil
+	}
+
+	return m.Employee{}, fmt.Errorf("could not find Employee with rfid '%s'", rfid)
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) GetEmployeeWithDatabaseId(id string) (m.Employee, error) {
+	_, empl, err := findEmployee(db.employees, func(e m.Employee) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		return *empl, nil
+	}
+
+	return m.Employee{}, fmt.Errorf("could not find Employee with database id '%s'", id)
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) GetAllEmployees() ([]m.Employee, error) {
+	return db.employees, nil
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) ReplaceEmployees(e []m.Employee) error {
+	for i := range e {
+		if e[i].DatabaseId == "" {
+			id := utils.GenerateUUID()
+			e[i].DatabaseId = id
+		}
+	}
+	db.employees = e
+	return nil
+}
+
+// Tjekker om en gammel item eksisterer, ellers indsætter den en.
+func (db *MemoryDatabase) InsertEmployee(empl m.Employee) error {
+	if empl.DatabaseId == "" {
+		empl.DatabaseId = utils.GenerateUUID()
+	}
+	_, oldEmpl, err := findEmployee(db.employees, func(e m.Employee) bool {
+		return e.DatabaseId == empl.DatabaseId
+	})
+
+	if err == nil && oldEmpl.DatabaseId == empl.DatabaseId {
+		return fmt.Errorf("employee with database id '%s' already exists", oldEmpl.DatabaseId)
+	}
+
+	db.employees = append(db.employees, empl)
+	return nil
+}
+
+// Eftersom find... funktionen returnerer en pointer, kan man bare direkte ændre properties.
+func (db *MemoryDatabase) UpdateEmployeeWithDatabaseId(id string, props m.Employee) error {
+	i, _, err := findEmployee(db.employees, func(e m.Employee) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		db.employees[i].Rfid = props.Rfid
+		db.employees[i].Name = props.Name
+		db.employees[i].Flex = props.Flex
+		db.employees[i].Working = props.Working
+		db.employees[i].Department = props.Department
+		db.employees[i].Photo = props.Photo
+
+		return nil
+	}
+
+	return fmt.Errorf("could not find Employee with database id '%s'", id)
+}
+
+// 1. Finder employee
+// 2. Bytter den sidste employee og den fundne employee's plads
+// 3. Skærer den sidste value i db.employees af (som nu er blevet til den fundne employee)
+func (db *MemoryDatabase) DeleteEmployeeWithDatabaseId(id string) error {
+	i, _, err := findEmployee(db.employees, func(e m.Employee) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		db.employees[i] = db.employees[len(db.employees)-1]
+		db.employees = db.employees[:len(db.employees)-1]
+		return nil
+	}
+
+	return fmt.Errorf("could not find Employee with database id '%s'", id)
+}
+
+// DatabaseId er egentligt meget irrelevant, det er bare noget som Local Cache bruger til at indekse ting.
+// WrapperId er det, som Wrapperen gemmer Options som, og det er det, som den forstår.
+func (db *MemoryDatabase) GetOptionWithWrapperId(id int) (m.Option, error) {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
+		return o.WrapperId == id
+	})
+
+	if err == nil {
+		return *opt, nil
+	}
+
+	return m.Option{}, fmt.Errorf("could not find Option with wrapper id '%d'", id)
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) GetOptionWithDatabaseId(id string) (m.Option, error) {
+	_, opt, err := findOption(db.options, func(o m.Option) bool {
+		return o.DatabaseId == id
+	})
+
+	if err == nil {
+		return *opt, nil
+	}
+
+	return m.Option{}, fmt.Errorf("could not find Option with database id '%s'", id)
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) GetAllOptions() ([]m.Option, error) {
+	return db.options, nil
+}
+
+// Giver alle options der ikke har en databaseid en databaseid
+// Ellers selvforklarende
+func (db *MemoryDatabase) ReplaceOptions(o []m.Option) error {
+	for i := range o {
+		if o[i].DatabaseId == "" {
+			id := utils.GenerateUUID()
+			o[i].DatabaseId = id
+		}
+	}
+	db.options = o
+	return nil
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) InsertOption(opt m.Option) error {
+	if opt.DatabaseId == "" {
+		opt.DatabaseId = utils.GenerateUUID()
+	}
+
+	_, oldOpt, err := findOption(db.options, func(o m.Option) bool {
+		return o.DatabaseId == opt.DatabaseId
+	})
+
+	if err == nil && opt.DatabaseId == oldOpt.DatabaseId {
+		return fmt.Errorf("option with database id '%s' already exists", oldOpt.DatabaseId)
+	}
+
+	db.options = append(db.options, opt)
+	return nil
+}
+
+// Eftersom find... funktionen returnerer en pointer, kan man bare direkte ændre properties.
+func (db *MemoryDatabase) UpdateOptionWithDatabaseId(id string, props m.Option) error {
+	i, _, err := findOption(db.options, func(o m.Option) bool {
+		return o.DatabaseId == id
+	})
+
+	if err == nil {
+		db.options[i].Name = props.Name
+		db.options[i].WrapperId = props.WrapperId
+		db.options[i].Schedule = props.Schedule
+	}
+
+	return fmt.Errorf("could not find Option with database id '%s'", id)
+}
+
+// 1. Finder option
+// 2. Bytter den sidste option og den fundne option's plads
+// 3. Skærer den sidste value i db.options af (som nu er blevet til den fundne option)
+func (db *MemoryDatabase) DeleteOptionWithDatabaseId(id string) error {
+	i, _, err := findOption(db.options, func(e m.Option) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		db.options[i] = db.options[len(db.options)-1]
+		db.options = db.options[:len(db.options)-1]
+		return nil
+	}
+
+	return fmt.Errorf("could not find Option with database id '%s'", id)
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) InsertTask(task m.Task) error {
+	if task.DatabaseId == "" {
+		task.DatabaseId = utils.GenerateUUID()
+	}
+	_, oldTask, err := findTask(db.tasks, func(e m.Task) bool {
+		return e.DatabaseId == task.DatabaseId
+	})
+
+	if err == nil && oldTask.DatabaseId == task.DatabaseId {
+		return fmt.Errorf("task with database id '%s' already exists", oldTask.DatabaseId)
+	}
+
+	db.tasks = append(db.tasks, task)
+	return nil
+}
+
+// Selvforklarende
+func (db *MemoryDatabase) GetAllTasks() ([]m.Task, error) {
+	return db.tasks, nil
+}
+
+// 1. Finder task
+// 2. Bytter den sidste task og den fundne task's plads
+// 3. Skærer den sidste value i db.tasks af (som nu er blevet til den fundne task)
+func (db *MemoryDatabase) DeleteTaskWithDatabaseId(id string) error {
+	i, _, err := findTask(db.tasks, func(e m.Task) bool {
+		return e.DatabaseId == id
+	})
+
+	if err == nil {
+		db.tasks[i] = db.tasks[len(db.tasks)-1]
+		db.tasks = db.tasks[:len(db.tasks)-1]
+		return nil
+	}
+
+	return fmt.Errorf("could not find Task with database id '%s'", id)
+}
+
+// Alle de funktioner, der skal laves på en database, før at de opfylder kravet om at være en AbstractDatabase
+// Det gør, at man kan bruge AbstractDatabase som en type, og pga. det kunne udskifte sin MemoryDatabase med f.eks. en Filesystem baseret en, eller noget helt tredje, uden nogen problemer
+// Eftersom at alting udover main funktionen har ingen referencer til MemoryDatabase, kun AbstractDatabase.
+// Så længe at de har alle disse funktioner.
+type AbstractDatabase interface {
+	GetEmployeeWithRfid(string) (m.Employee, error)
+	GetEmployeeWithDatabaseId(string) (m.Employee, error)
+	GetAllEmployees() ([]m.Employee, error)
+	ReplaceEmployees([]m.Employee) error
+	InsertEmployee(m.Employee) error
+	UpdateEmployeeWithDatabaseId(string, m.Employee) error
+	DeleteEmployeeWithDatabaseId(string) error
+
+	GetOptionWithWrapperId(int) (m.Option, error)
+	GetOptionWithDatabaseId(string) (m.Option, error)
+	GetAllOptions() ([]m.Option, error)
+	ReplaceOptions([]m.Option) error
+	InsertOption(m.Option) error
+	UpdateOptionWithDatabaseId(string, m.Option) error
+	DeleteOptionWithDatabaseId(string) error
+
+	InsertTask(m.Task) error
+	GetAllTasks() ([]m.Task, error)
+	DeleteTaskWithDatabaseId(string) error
+}
