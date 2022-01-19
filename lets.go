@@ -26,6 +26,7 @@ func main() {
 
 	db := database.MemoryDatabase{}
 	w.InitialSync(&db, &logger)
-	go w.ScheduleSync(&db, &logger)
+	go w.ScheduleQuickSync(&db, &logger)
+	go w.SchedulePhotoSync(&db, &logger)
 	setupApiServer(&db, &logger)
 }

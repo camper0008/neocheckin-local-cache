@@ -57,11 +57,19 @@ func InitialSync(db database.AbstractDatabase, l *utils.Logger) {
 	fmt.Println("Done")
 }
 
-func ScheduleSync(db database.AbstractDatabase, l *utils.Logger) {
+func ScheduleQuickSync(db database.AbstractDatabase, l *utils.Logger) {
 	for range time.Tick(time.Minute * 1) {
 		fmt.Println("Attempting to synchronize...")
 		syncTaskTypes(db, l)
 		syncEmployeesWithoutPhoto(db, l)
+		fmt.Println("Done")
+	}
+}
+
+func SchedulePhotoSync(db database.AbstractDatabase, l *utils.Logger) {
+	for range time.Tick(time.Hour * 24) {
+		fmt.Println("Attempting to synchronize photos...")
+		syncEmployeesWithPhoto(db, l)
 		fmt.Println("Done")
 	}
 }
